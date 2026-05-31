@@ -5,7 +5,7 @@ export default function Home() {
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-start justify-center gap-6 px-6 py-16">
       <div className="flex w-full items-center justify-between">
-        <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+        <span className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
           Filtrix
         </span>
         <ThemeToggle />
