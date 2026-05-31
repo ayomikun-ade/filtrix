@@ -110,8 +110,9 @@ state operations, recursive rendering, and critical UI interactions.
 
 - **CI** (`.github/workflows/ci.yml`) runs typecheck, lint, tests, and build on
   every pull request and push to `main`.
-- **CD** (`.github/workflows/deploy.yml`) deploys via the **Vercel CLI** —
-  preview deployments for pull requests, production on merge to `main`. It stays
+- **CD** (`.github/workflows/deploy.yml`) deploys via the **Vercel CLI**, and
+  only runs **after CI succeeds for the same commit** (triggered by `workflow_run`)
+  — preview deployments for pull requests, production on merge to `main`. It stays
   inert until configured:
   1. Add repo secrets `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`.
   2. Add repo variable `VERCEL_DEPLOY_ENABLED = "true"`.
