@@ -74,8 +74,8 @@ src/
     landing/                     # hero, feature grid
     ui/                          # shadcn primitives
     theme-provider · theme-toggle · brand
-  lib/                           # query engine, schema, store, utils (incoming)
-  test/                          # test setup
+  lib/                           # query engine, schema, store, utils
+  tests/                         # unit tests mirroring src/
 ```
 
 ## Architecture
