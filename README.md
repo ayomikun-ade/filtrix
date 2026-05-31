@@ -1,36 +1,135 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Filtrix
 
-## Getting Started
+A visual query builder for constructing complex, deeply nested database queries
+through a graphical interface — no raw query syntax required. Build AND/OR logic
+to any depth, preview it as **SQL**, **MongoDB**, and **GraphQL** in real time,
+and run it against sample datasets in the browser.
 
-First, run the development server:
+- **Live demo:** _to be added once the production deployment is configured._
+- **Status:** in active development (see [Roadmap](#roadmap)).
+
+---
+
+## Features
+
+- **Recursive rule builder** — field / operator / value rules grouped with
+  AND/OR to unlimited depth; collapsible, reorderable, drag-and-drop.
+- **Schema-driven** — operators and input controls adapt to each field's type
+  (date pickers for dates, dropdowns for enums, number inputs for numbers).
+- **Live query preview** — SQL, MongoDB, and GraphQL output, updated in real time.
+- **Execution simulator** — run queries over mock datasets with result counts,
+  sorting, pagination, virtualization, and loading/empty states.
+- **Validation engine** — incompatible operators, empty groups, and malformed
+  values are caught and surfaced inline.
+- **Advanced interactions** — keyboard shortcuts, command palette, query history
+  (undo/redo), saved presets, JSON import/export, dark/light mode, animations.
+
+## Tech stack
+
+| Concern     | Choice                            |
+| ----------- | --------------------------------- |
+| Framework   | Next.js (App Router) + TypeScript |
+| Styling     | TailwindCSS v4 + shadcn/ui        |
+| Icons       | Hugeicons                         |
+| State       | Zustand (+ immer)                 |
+| Drag & drop | DnD Kit                           |
+| Forms       | React Hook Form                   |
+| Validation  | Zod                               |
+| Testing     | Vitest + React Testing Library    |
+| CI / CD     | GitHub Actions + Vercel CLI       |
+
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). The landing page lives at
+`/` and the builder at `/builder`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Script               | Description                |
+| -------------------- | -------------------------- |
+| `pnpm dev`           | Start the dev server       |
+| `pnpm build`         | Production build           |
+| `pnpm start`         | Serve the production build |
+| `pnpm lint`          | ESLint                     |
+| `pnpm typecheck`     | TypeScript, no emit        |
+| `pnpm test`          | Run the test suite once    |
+| `pnpm test:watch`    | Watch mode                 |
+| `pnpm test:coverage` | Coverage report            |
+| `pnpm format`        | Format with Prettier       |
 
-## Learn More
+## Project structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+  app/
+    layout.tsx · globals.css     # shared shell + theme provider
+    page.tsx                     # landing page (/)
+    builder/page.tsx             # query builder app (/builder)
+  components/
+    landing/                     # hero, feature grid
+    ui/                          # shadcn primitives
+    theme-provider · theme-toggle · brand
+  lib/                           # query engine, schema, store, utils (incoming)
+  test/                          # test setup
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Architecture
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+> Expanded as the engine lands. Full design rationale lives in the planning doc.
 
-## Deploy on Vercel
+- **Normalized query tree** — the query is stored as a flat `id → node` map with
+  a root id, not a nested object. This gives O(1) node updates and lets each UI
+  node subscribe to only its own slice, so editing one rule never re-renders its
+  siblings.
+- **Recursive rendering** — a `QueryGroup` renders its children as either nested
+  `QueryGroup`s or `QueryCondition`s, memoized and keyed by stable node ids.
+- **State management** — a single Zustand store with immer for immutable,
+  recursion-aware updates; companion stores for history and saved presets.
+- **Query engine** — pure, recursive `tree → output` builders for SQL, MongoDB,
+  and GraphQL, plus a `tree → predicate` evaluator powering the simulator.
+- **Validation** — derived, memoized `tree → errors`; execution is blocked while
+  any error exists.
+- **Performance** — normalized state, per-node memoized selectors, derived state,
+  stable keys, and result virtualization.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Testing
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+pnpm test
+```
+
+Vitest + React Testing Library cover query generation, the validation engine,
+state operations, recursive rendering, and critical UI interactions.
+
+## CI / CD
+
+- **CI** (`.github/workflows/ci.yml`) runs typecheck, lint, tests, and build on
+  every pull request and push to `main`.
+- **CD** (`.github/workflows/deploy.yml`) deploys via the **Vercel CLI** —
+  preview deployments for pull requests, production on merge to `main`. It stays
+  inert until configured:
+  1. Add repo secrets `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`.
+  2. Add repo variable `VERCEL_DEPLOY_ENABLED = "true"`.
+  3. Disable Vercel's dashboard Git auto-deploy so the CLI is the only path.
+
+## Git workflow
+
+Work happens on feature branches merged into `main` via pull requests — no direct
+pushes to `main`, descriptive PR titles, and meaningful commit history.
+
+## Roadmap
+
+1. Project scaffold, tooling, CI/CD — **done**
+2. Query model & schema system
+3. Zustand store & recursive state ops
+4. Recursive builder UI
+5. Query engine & live preview (SQL / Mongo / GraphQL)
+6. Validation engine
+7. Execution simulator & results
+8. Advanced interactions (DnD, shortcuts, history, presets, import/export)
+9. Polish, performance, docs & demo
