@@ -108,12 +108,13 @@ state operations, recursive rendering, and critical UI interactions.
 
 ## CI / CD
 
-- **CI** (`.github/workflows/ci.yml`) runs typecheck, lint, tests, and build on
-  every pull request and push to `main`.
-- **CD** (`.github/workflows/deploy.yml`) deploys via the **Vercel CLI**, and
-  only runs **after CI succeeds for the same commit** (triggered by `workflow_run`)
-  — preview deployments for pull requests, production on merge to `main`. It stays
-  inert until configured:
+A single workflow (`.github/workflows/ci.yml`) runs both CI and CD:
+
+- The **verify** job runs typecheck, format check, lint, tests, and build on every
+  pull request and push to `main`.
+- The **deploy** jobs (`needs: verify`, so a red CI blocks them) deploy via the
+  **Vercel CLI** and show as native checks on the PR — preview deployments for
+  pull requests, production on merge to `main`. They stay inert until configured:
   1. Add repo secrets `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`.
   2. Add repo variable `VERCEL_DEPLOY_ENABLED = "true"`.
   3. Disable Vercel's dashboard Git auto-deploy so the CLI is the only path.
