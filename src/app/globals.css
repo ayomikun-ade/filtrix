@@ -136,4 +136,11 @@
   html {
     @apply font-sans;
   }
+  /* Every interactive control shows a pointer (disabled ones keep the default). */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  select:not(:disabled),
+  summary {
+    cursor: pointer;
+  }
 }
