@@ -84,7 +84,7 @@ export function BuilderApp() {
           </div>
         </section>
 
-        <aside className="flex flex-col lg:overflow-hidden">
+        <aside className="flex flex-col border-border lg:overflow-hidden lg:border-l">
           <div className="flex flex-col border-b border-border">
             <div className="flex items-center gap-4 border-b border-border px-4 pt-2 text-xs font-medium">
               <Tab active>SQL</Tab>
