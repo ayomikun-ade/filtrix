@@ -1,3 +1,6 @@
+"use client";
+
+import { motion, MotionConfig } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Database02Icon,
@@ -7,6 +10,8 @@ import {
   SourceCodeIcon,
   ValidationIcon,
 } from "@hugeicons/core-free-icons";
+
+import { riseItem, staggerContainer } from "@/lib/motion";
 
 type Feature = {
   icon: typeof GitBranchIcon;
@@ -59,20 +64,29 @@ export function FeatureGrid() {
         </h2>
       </div>
 
-      <ul className="grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">
-        {FEATURES.map((feature) => (
-          <li
-            key={feature.title}
-            className="flex flex-col gap-3 bg-card p-5 transition-colors hover:bg-muted/40"
-          >
-            <span className="inline-flex size-9 items-center justify-center rounded-md border border-border bg-background">
-              <HugeiconsIcon icon={feature.icon} className="size-4.5" />
-            </span>
-            <h3 className="text-sm font-medium">{feature.title}</h3>
-            <p className="text-sm text-muted-foreground">{feature.body}</p>
-          </li>
-        ))}
-      </ul>
+      <MotionConfig reducedMotion="user">
+        <motion.ul
+          className="grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-3"
+          variants={staggerContainer}
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true, margin: "-80px" }}
+        >
+          {FEATURES.map((feature) => (
+            <motion.li
+              key={feature.title}
+              variants={riseItem}
+              className="flex flex-col gap-3 bg-card p-5 transition-colors hover:bg-muted/40"
+            >
+              <span className="inline-flex size-9 items-center justify-center rounded-md border border-border bg-background">
+                <HugeiconsIcon icon={feature.icon} className="size-4.5" />
+              </span>
+              <h3 className="text-sm font-medium">{feature.title}</h3>
+              <p className="text-sm text-muted-foreground">{feature.body}</p>
+            </motion.li>
+          ))}
+        </motion.ul>
+      </MotionConfig>
     </section>
   );
 }
