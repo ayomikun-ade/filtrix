@@ -22,7 +22,7 @@ import { useQueryValidity } from "@/lib/validation/useQueryValidity";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 50;
 const ROW_HEIGHT = 33;
 
 type Status = "idle" | "loading" | "done";

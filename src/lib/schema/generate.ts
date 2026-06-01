@@ -1,6 +1,6 @@
 import type { DataSource } from "@/lib/schema/types";
 
-export const DATASET_SIZE = 600;
+export const DATASET_SIZE = 150;
 
 type Row = Record<string, unknown>;
 
