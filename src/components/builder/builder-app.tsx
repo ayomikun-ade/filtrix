@@ -10,6 +10,7 @@ import {
   CommandIcon,
   Delete02Icon,
   Download01Icon,
+  Menu01Icon,
   Upload01Icon,
 } from "@hugeicons/core-free-icons";
 
@@ -20,18 +21,17 @@ import { useSourceStore } from "@/lib/store/sourceStore";
 import { useUiStore } from "@/lib/store/uiStore";
 import { Brand } from "@/components/brand";
 import { BuilderCanvas } from "@/components/builder/builder-canvas";
+import { BuilderRail } from "@/components/builder/builder-rail";
 import { CommandPalette } from "@/components/builder/command-palette";
 import { ExportDialog } from "@/components/builder/export-dialog";
 import { ImportDialog } from "@/components/builder/import-dialog";
-import { PresetList } from "@/components/builder/preset-list";
 import { QueryPreview } from "@/components/builder/query-preview";
 import { ResultsPanel } from "@/components/builder/results-panel";
-import { RunHistoryList } from "@/components/builder/run-history-list";
 import { SavePresetDialog } from "@/components/builder/save-preset-dialog";
-import { SourcePicker } from "@/components/builder/source-picker";
 import { ValidationBadge } from "@/components/builder/validation-badge";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
+import { Sheet } from "@/components/ui/sheet";
 
 export function BuilderApp() {
   const { reset } = useQueryActions();
@@ -41,13 +41,22 @@ export function BuilderApp() {
   const openDialog = useUiStore((s) => s.openDialog);
   const closeDialog = useUiStore((s) => s.closeDialog);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [railOpen, setRailOpen] = useState(false);
   const openPalette = useCallback(() => setPaletteOpen(true), []);
   useKeyboardShortcuts({ onOpenPalette: openPalette });
 
   return (
     <div className="flex min-h-dvh flex-col lg:h-dvh">
       <header className="flex items-center justify-between gap-4 border-b border-border px-4 py-2.5">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setRailOpen(true)}
+            aria-label="Open menu"
+            className="inline-flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground lg:hidden"
+          >
+            <HugeiconsIcon icon={Menu01Icon} className="size-4" />
+          </button>
           <Link
             href="/"
             aria-label="Back to home"
@@ -59,25 +68,25 @@ export function BuilderApp() {
         </div>
 
         <div className="flex items-center gap-1.5">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Undo"
+            onClick={undo}
+            disabled={!canUndo}
+          >
+            <HugeiconsIcon icon={ArrowTurnBackwardIcon} className="size-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Redo"
+            onClick={redo}
+            disabled={!canRedo}
+          >
+            <HugeiconsIcon icon={ArrowTurnForwardIcon} className="size-4" />
+          </Button>
           <div className="hidden items-center gap-1.5 sm:flex">
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label="Undo"
-              onClick={undo}
-              disabled={!canUndo}
-            >
-              <HugeiconsIcon icon={ArrowTurnBackwardIcon} className="size-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label="Redo"
-              onClick={redo}
-              disabled={!canRedo}
-            >
-              <HugeiconsIcon icon={ArrowTurnForwardIcon} className="size-4" />
-            </Button>
             <span className="mx-1 h-5 w-px bg-border" aria-hidden />
             <Button
               variant="outline"
@@ -112,17 +121,9 @@ export function BuilderApp() {
       </header>
 
       <div className="flex flex-1 flex-col lg:flex-row lg:overflow-hidden">
-        {/* Left rail — full height, like VSCode's sidebar */}
-        <aside className="flex flex-col gap-6 border-b border-border p-4 lg:w-64 lg:shrink-0 lg:overflow-auto lg:border-r lg:border-b-0">
-          <PanelSection label="Data source">
-            <SourcePicker />
-          </PanelSection>
-          <PanelSection label="Saved presets">
-            <PresetList />
-          </PanelSection>
-          <PanelSection label="History">
-            <RunHistoryList />
-          </PanelSection>
+        {/* Persistent sidebar on desktop; a slide-out sheet replaces it on mobile. */}
+        <aside className="hidden p-4 lg:block lg:w-64 lg:shrink-0 lg:overflow-auto lg:border-r lg:border-border">
+          <BuilderRail />
         </aside>
 
         {/* Content column: query + preview on top, results docked below */}
@@ -157,6 +158,11 @@ export function BuilderApp() {
         </div>
       </div>
 
+      {railOpen ? (
+        <Sheet title="filtrix" onClose={() => setRailOpen(false)}>
+          <BuilderRail onNavigate={() => setRailOpen(false)} />
+        </Sheet>
+      ) : null}
       {paletteOpen ? (
         <CommandPalette onClose={() => setPaletteOpen(false)} />
       ) : null}
@@ -165,23 +171,6 @@ export function BuilderApp() {
       {dialog === "savePreset" ? (
         <SavePresetDialog onClose={closeDialog} />
       ) : null}
-    </div>
-  );
-}
-
-function PanelSection({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-2">
-      <span className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
-        {label}
-      </span>
-      {children}
     </div>
   );
 }

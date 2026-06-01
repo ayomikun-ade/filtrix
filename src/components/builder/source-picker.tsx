@@ -7,12 +7,13 @@ import { useSourceStore } from "@/lib/store/sourceStore";
 import { cn } from "@/lib/utils";
 
 // Switching source invalidates existing field references, so the query resets.
-export function SourcePicker() {
+export function SourcePicker({ onNavigate }: { onNavigate?: () => void }) {
   const sourceId = useSourceStore((s) => s.sourceId);
   const setSource = useSourceStore((s) => s.setSource);
   const { reset } = useQueryActions();
 
   function select(id: string) {
+    onNavigate?.();
     if (id === sourceId) return;
     setSource(id);
     reset();

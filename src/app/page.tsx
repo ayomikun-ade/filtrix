@@ -33,7 +33,17 @@ export default function LandingPage() {
       <footer className="border-t border-border">
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-2 px-6 py-6 font-mono text-xs text-muted-foreground sm:flex-row">
           <Brand />
-          <span>Stage 8 — Visual Query Builder</span>
+          <span>
+            Built by —{" "}
+            <a
+              href="https://github.com/ayomikun-ade"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:underline"
+            >
+              ayomikun
+            </a>
+          </span>
         </div>
       </footer>
     </div>
