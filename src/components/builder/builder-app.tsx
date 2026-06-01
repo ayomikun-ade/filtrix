@@ -17,9 +17,12 @@ import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useHistory } from "@/lib/store/historyStore";
 import { useQueryActions } from "@/lib/store/hooks";
 import { useSourceStore } from "@/lib/store/sourceStore";
+import { useUiStore } from "@/lib/store/uiStore";
 import { Brand } from "@/components/brand";
 import { BuilderCanvas } from "@/components/builder/builder-canvas";
 import { CommandPalette } from "@/components/builder/command-palette";
+import { ExportDialog } from "@/components/builder/export-dialog";
+import { ImportDialog } from "@/components/builder/import-dialog";
 import { QueryPreview } from "@/components/builder/query-preview";
 import { ResultsPanel } from "@/components/builder/results-panel";
 import { SourcePicker } from "@/components/builder/source-picker";
@@ -31,6 +34,9 @@ export function BuilderApp() {
   const { reset } = useQueryActions();
   const sourceId = useSourceStore((s) => s.sourceId);
   const { undo, redo, canUndo, canRedo } = useHistory();
+  const dialog = useUiStore((s) => s.dialog);
+  const openDialog = useUiStore((s) => s.openDialog);
+  const closeDialog = useUiStore((s) => s.closeDialog);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const openPalette = useCallback(() => setPaletteOpen(true), []);
   useKeyboardShortcuts({ onOpenPalette: openPalette });
@@ -70,11 +76,19 @@ export function BuilderApp() {
               <HugeiconsIcon icon={ArrowTurnForwardIcon} className="size-4" />
             </Button>
             <span className="mx-1 h-5 w-px bg-border" aria-hidden />
-            <Button variant="outline" size="sm" disabled>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => openDialog("import")}
+            >
               <HugeiconsIcon icon={Upload01Icon} className="size-4" />
               Import
             </Button>
-            <Button variant="outline" size="sm" disabled>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => openDialog("export")}
+            >
               <HugeiconsIcon icon={Download01Icon} className="size-4" />
               Export
             </Button>
@@ -143,6 +157,8 @@ export function BuilderApp() {
       {paletteOpen ? (
         <CommandPalette onClose={() => setPaletteOpen(false)} />
       ) : null}
+      {dialog === "import" ? <ImportDialog onClose={closeDialog} /> : null}
+      {dialog === "export" ? <ExportDialog onClose={closeDialog} /> : null}
     </div>
   );
 }

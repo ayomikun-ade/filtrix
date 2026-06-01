@@ -9,6 +9,7 @@ import { useQueryActions } from "@/lib/store/hooks";
 import { useQueryStore } from "@/lib/store/queryStore";
 import { useRunStore } from "@/lib/store/runStore";
 import { useSourceStore } from "@/lib/store/sourceStore";
+import { useUiStore } from "@/lib/store/uiStore";
 
 export interface Chord {
   key: string; // matched against KeyboardEvent.key (case-insensitive)
@@ -57,6 +58,23 @@ export function useCommands(): Command[] {
         label: "Clear all rules",
         run: () => reset(),
         chord: { mod: true, shift: true, key: "c" },
+      },
+      {
+        id: "export",
+        label: "Export query as JSON",
+        run: () => useUiStore.getState().openDialog("export"),
+        chord: { mod: true, key: "e" },
+      },
+      {
+        id: "import",
+        label: "Import query from JSON",
+        run: () => useUiStore.getState().openDialog("import"),
+        chord: { mod: true, key: "i" },
+      },
+      {
+        id: "save-preset",
+        label: "Save query as preset",
+        run: () => useUiStore.getState().openDialog("savePreset"),
       },
       {
         id: "undo",

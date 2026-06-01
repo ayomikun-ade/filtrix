@@ -8,6 +8,7 @@ import {
   ArrowLeft01Icon,
   ArrowRight01Icon,
   ArrowUp01Icon,
+  Download01Icon,
   Loading03Icon,
   PlayIcon,
   SearchRemoveIcon,
@@ -104,6 +105,17 @@ export function ResultsPanel() {
     );
   }
 
+  function downloadCsv() {
+    if (!source) return;
+    const blob = new Blob([toCsv(sorted, source.fields)], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `filtrix-${sourceId}-results.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className={cn("flex flex-col", open && "h-80 lg:h-[42dvh]")}>
       <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
@@ -129,10 +141,18 @@ export function ResultsPanel() {
             </span>
           ) : null}
         </div>
-        <Button size="sm" onClick={run} disabled={!valid}>
-          <HugeiconsIcon icon={PlayIcon} className="size-4" />
-          Run
-        </Button>
+        <div className="flex items-center gap-1.5">
+          {status === "done" && results.length > 0 ? (
+            <Button variant="outline" size="sm" onClick={downloadCsv}>
+              <HugeiconsIcon icon={Download01Icon} className="size-4" />
+              Export
+            </Button>
+          ) : null}
+          <Button size="sm" onClick={run} disabled={!valid}>
+            <HugeiconsIcon icon={PlayIcon} className="size-4" />
+            Run
+          </Button>
+        </div>
       </div>
 
       {!open ? null : !valid ? (
@@ -259,4 +279,20 @@ function formatCell(value: unknown): string {
 function compareCells(a: unknown, b: unknown): number {
   if (typeof a === "number" && typeof b === "number") return a - b;
   return String(a).localeCompare(String(b));
+}
+
+function toCsv(
+  rows: Row[],
+  fields: readonly { name: string; label: string }[],
+): string {
+  const header = fields.map((f) => csvCell(f.label)).join(",");
+  const body = rows.map((row) =>
+    fields.map((f) => csvCell(row[f.name])).join(","),
+  );
+  return [header, ...body].join("\n");
+}
+
+function csvCell(value: unknown): string {
+  const s = value === null || value === undefined ? "" : String(value);
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
