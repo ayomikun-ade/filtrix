@@ -40,7 +40,7 @@ export function QueryPreview() {
   }
 
   return (
-    <div className="flex min-h-0 flex-col border-b border-border">
+    <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex items-center justify-between border-b border-border px-4 pt-2">
         <div className="flex items-center gap-4 text-xs font-medium">
           {TABS.map((tab) => (
@@ -78,7 +78,7 @@ export function QueryPreview() {
         {generated.summary}
       </p>
 
-      <pre className="max-h-64 overflow-auto px-4 py-3 font-mono text-xs leading-relaxed whitespace-pre-wrap text-foreground">
+      <pre className="flex-1 overflow-auto px-4 py-3 font-mono text-xs leading-relaxed whitespace-pre-wrap text-foreground">
         {code}
       </pre>
     </div>
