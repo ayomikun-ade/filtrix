@@ -8,14 +8,15 @@ import {
   ArrowTurnForwardIcon,
   Delete02Icon,
   Download01Icon,
-  PlayIcon,
   Upload01Icon,
 } from "@hugeicons/core-free-icons";
 
 import { useQueryActions } from "@/lib/store/hooks";
+import { useSourceStore } from "@/lib/store/sourceStore";
 import { Brand } from "@/components/brand";
 import { BuilderCanvas } from "@/components/builder/builder-canvas";
 import { QueryPreview } from "@/components/builder/query-preview";
+import { ResultsPanel } from "@/components/builder/results-panel";
 import { SourcePicker } from "@/components/builder/source-picker";
 import { ValidationBadge } from "@/components/builder/validation-badge";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -23,6 +24,7 @@ import { Button } from "@/components/ui/button";
 
 export function BuilderApp() {
   const { reset } = useQueryActions();
+  const sourceId = useSourceStore((s) => s.sourceId);
 
   return (
     <div className="flex min-h-dvh flex-col lg:h-dvh">
@@ -93,20 +95,7 @@ export function BuilderApp() {
 
         <aside className="flex flex-col border-border lg:overflow-hidden lg:border-l">
           <QueryPreview />
-          <div className="flex min-h-0 flex-1 flex-col">
-            <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
-              <span className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
-                Results
-              </span>
-              <Button size="sm" disabled>
-                <HugeiconsIcon icon={PlayIcon} className="size-4" />
-                Run
-              </Button>
-            </div>
-            <div className="flex flex-1 items-center justify-center p-6">
-              <EmptyHint>Run a query to inspect matching rows.</EmptyHint>
-            </div>
-          </div>
+          <ResultsPanel key={sourceId} />
         </aside>
       </div>
     </div>
