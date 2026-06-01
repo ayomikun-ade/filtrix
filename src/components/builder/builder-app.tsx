@@ -1,20 +1,25 @@
 "use client";
 
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowLeft01Icon,
   ArrowTurnBackwardIcon,
   ArrowTurnForwardIcon,
+  CommandIcon,
   Delete02Icon,
   Download01Icon,
   Upload01Icon,
 } from "@hugeicons/core-free-icons";
 
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { useHistory } from "@/lib/store/historyStore";
 import { useQueryActions } from "@/lib/store/hooks";
 import { useSourceStore } from "@/lib/store/sourceStore";
 import { Brand } from "@/components/brand";
 import { BuilderCanvas } from "@/components/builder/builder-canvas";
+import { CommandPalette } from "@/components/builder/command-palette";
 import { QueryPreview } from "@/components/builder/query-preview";
 import { ResultsPanel } from "@/components/builder/results-panel";
 import { SourcePicker } from "@/components/builder/source-picker";
@@ -25,6 +30,10 @@ import { Button } from "@/components/ui/button";
 export function BuilderApp() {
   const { reset } = useQueryActions();
   const sourceId = useSourceStore((s) => s.sourceId);
+  const { undo, redo, canUndo, canRedo } = useHistory();
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const openPalette = useCallback(() => setPaletteOpen(true), []);
+  useKeyboardShortcuts({ onOpenPalette: openPalette });
 
   return (
     <div className="flex min-h-dvh flex-col lg:h-dvh">
@@ -42,10 +51,22 @@ export function BuilderApp() {
 
         <div className="flex items-center gap-1.5">
           <div className="hidden items-center gap-1.5 sm:flex">
-            <Button variant="ghost" size="icon-sm" aria-label="Undo" disabled>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Undo"
+              onClick={undo}
+              disabled={!canUndo}
+            >
               <HugeiconsIcon icon={ArrowTurnBackwardIcon} className="size-4" />
             </Button>
-            <Button variant="ghost" size="icon-sm" aria-label="Redo" disabled>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Redo"
+              onClick={redo}
+              disabled={!canRedo}
+            >
               <HugeiconsIcon icon={ArrowTurnForwardIcon} className="size-4" />
             </Button>
             <span className="mx-1 h-5 w-px bg-border" aria-hidden />
@@ -58,6 +79,17 @@ export function BuilderApp() {
               Export
             </Button>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={openPalette}
+            aria-label="Open command palette"
+          >
+            <HugeiconsIcon icon={CommandIcon} className="size-4" />
+            <kbd className="hidden font-mono text-[10px] text-muted-foreground sm:inline">
+              ⌘K
+            </kbd>
+          </Button>
           <ThemeToggle />
         </div>
       </header>
@@ -107,6 +139,10 @@ export function BuilderApp() {
           </div>
         </div>
       </div>
+
+      {paletteOpen ? (
+        <CommandPalette onClose={() => setPaletteOpen(false)} />
+      ) : null}
     </div>
   );
 }

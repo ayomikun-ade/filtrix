@@ -17,6 +17,7 @@ import { buildPredicate, type Row } from "@/lib/query/evaluate";
 import { DATASET_SIZE, expandDataset } from "@/lib/schema/generate";
 import { getSource } from "@/lib/schema/sources";
 import { useQueryStore } from "@/lib/store/queryStore";
+import { useRunStore } from "@/lib/store/runStore";
 import { useSourceStore } from "@/lib/store/sourceStore";
 import { useQueryValidity } from "@/lib/validation/useQueryValidity";
 import { Button } from "@/components/ui/button";
@@ -38,8 +39,21 @@ export function ResultsPanel() {
   const [page, setPage] = useState(0);
   const [open, setOpen] = useState(false);
   const timer = useRef<number | null>(null);
+  const runRef = useRef<() => void>(() => {});
 
   useEffect(() => () => window.clearTimeout(timer.current ?? undefined), []);
+
+  // Keep a latest-ref of run() and fire it when something requests a run.
+  useEffect(() => {
+    runRef.current = run;
+  });
+  useEffect(
+    () =>
+      useRunStore.subscribe((s, prev) => {
+        if (s.token !== prev.token) runRef.current();
+      }),
+    [],
+  );
 
   const sorted = useMemo(() => {
     if (!sort.field) return results;
