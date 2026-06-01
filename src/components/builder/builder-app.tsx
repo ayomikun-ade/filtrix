@@ -23,8 +23,10 @@ import { BuilderCanvas } from "@/components/builder/builder-canvas";
 import { CommandPalette } from "@/components/builder/command-palette";
 import { ExportDialog } from "@/components/builder/export-dialog";
 import { ImportDialog } from "@/components/builder/import-dialog";
+import { PresetList } from "@/components/builder/preset-list";
 import { QueryPreview } from "@/components/builder/query-preview";
 import { ResultsPanel } from "@/components/builder/results-panel";
+import { SavePresetDialog } from "@/components/builder/save-preset-dialog";
 import { SourcePicker } from "@/components/builder/source-picker";
 import { ValidationBadge } from "@/components/builder/validation-badge";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -115,7 +117,7 @@ export function BuilderApp() {
             <SourcePicker />
           </PanelSection>
           <PanelSection label="Saved presets">
-            <EmptyHint>No saved presets yet.</EmptyHint>
+            <PresetList />
           </PanelSection>
           <PanelSection label="History">
             <EmptyHint>Your query history will appear here.</EmptyHint>
@@ -159,6 +161,9 @@ export function BuilderApp() {
       ) : null}
       {dialog === "import" ? <ImportDialog onClose={closeDialog} /> : null}
       {dialog === "export" ? <ExportDialog onClose={closeDialog} /> : null}
+      {dialog === "savePreset" ? (
+        <SavePresetDialog onClose={closeDialog} />
+      ) : null}
     </div>
   );
 }
