@@ -10,6 +10,7 @@ import {
 
 import { isGroup, type NodeId } from "@/lib/query/types";
 import { useChildren, useNode, useQueryActions } from "@/lib/store/hooks";
+import { validateGroup } from "@/lib/validation/validate";
 import { AddBar } from "@/components/builder/add-bar";
 import { BuilderNode } from "@/components/builder/builder-node";
 import { CombinatorToggle } from "@/components/builder/combinator-toggle";
@@ -23,6 +24,7 @@ function QueryGroupImpl({ id }: { id: NodeId }) {
   if (!node || !isGroup(node)) return null;
   const isRoot = node.parentId === null;
   const count = childIds.length;
+  const groupErrors = validateGroup(node, isRoot);
 
   return (
     <div className="space-y-2">
@@ -62,11 +64,15 @@ function QueryGroupImpl({ id }: { id: NodeId }) {
       </div>
 
       {!node.collapsed ? (
-        <div className="ml-[11px] space-y-2 border-l border-border pl-4">
+        <div className="ml-2.75 space-y-2 border-l border-border pl-4">
           {count === 0 ? (
-            <p className="py-1 text-sm text-muted-foreground">
-              No rules yet — add a condition or a nested group.
-            </p>
+            groupErrors.length > 0 ? (
+              <p className="py-1 text-sm text-destructive">{groupErrors[0]}</p>
+            ) : (
+              <p className="py-1 text-sm text-muted-foreground">
+                No rules yet — add a condition or a nested group.
+              </p>
+            )
           ) : (
             childIds.map((childId) => (
               <BuilderNode key={childId} id={childId} />

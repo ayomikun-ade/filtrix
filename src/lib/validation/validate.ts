@@ -19,14 +19,17 @@ export interface ValidationError {
 
 export type ValidationMap = Record<NodeId, ValidationError[]>;
 
+// Only genuine mistakes are reported. An incomplete row (no field yet, or a
+// required value not filled in) is "in progress", not invalid — the generators
+// already skip it — so it is left unflagged to avoid nagging mid-edit.
 export function validateCondition(
   node: ConditionNode,
   source: DataSource,
 ): string[] {
-  if (!node.field) return ["Select a field."];
+  if (!node.field) return [];
   const field = getField(source, node.field);
   if (!field) return ["Unknown field for this data source."];
-  if (!node.operator) return ["Select an operator."];
+  if (!node.operator) return [];
 
   const op = OPERATORS[node.operator];
   if (!op.types.includes(field.type)) {
@@ -40,13 +43,12 @@ export function validateCondition(
     case "none":
       break;
     case "unary":
-      if (isEmpty(value)) errors.push("Enter a value.");
-      else checkScalar(value as ScalarValue, field.type, node.operator, errors);
+      if (!isEmpty(value)) {
+        checkScalar(value as ScalarValue, field.type, node.operator, errors);
+      }
       break;
     case "list":
-      if (!Array.isArray(value) || value.length === 0) {
-        errors.push("Add at least one value.");
-      } else {
+      if (Array.isArray(value)) {
         for (const item of value) {
           checkScalar(item, field.type, node.operator, errors);
         }
@@ -54,19 +56,17 @@ export function validateCondition(
       break;
     case "binary": {
       if (
-        !Array.isArray(value) ||
-        value.length !== 2 ||
-        isEmpty(value[0]) ||
-        isEmpty(value[1])
+        Array.isArray(value) &&
+        value.length === 2 &&
+        !isEmpty(value[0]) &&
+        !isEmpty(value[1])
       ) {
-        errors.push("Enter both ends of the range.");
-        break;
-      }
-      const [from, to] = value as [ScalarValue, ScalarValue];
-      checkScalar(from, field.type, node.operator, errors);
-      checkScalar(to, field.type, node.operator, errors);
-      if (!rangeOrdered(from, to, field.type)) {
-        errors.push("Range start must be less than or equal to the end.");
+        const [from, to] = value as [ScalarValue, ScalarValue];
+        checkScalar(from, field.type, node.operator, errors);
+        checkScalar(to, field.type, node.operator, errors);
+        if (!rangeOrdered(from, to, field.type)) {
+          errors.push("Range start must be less than or equal to the end.");
+        }
       }
       break;
     }

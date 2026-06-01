@@ -19,11 +19,27 @@ function cond(partial: Partial<ConditionNode>): ConditionNode {
 }
 
 describe("validateCondition", () => {
-  it("requires a field and operator", () => {
-    expect(validateCondition(cond({}), movies)).toEqual(["Select a field."]);
-    expect(validateCondition(cond({ field: "rating" }), movies)).toEqual([
-      "Select an operator.",
-    ]);
+  it("does not flag incomplete rows (no field, no operator, empty value)", () => {
+    expect(validateCondition(cond({}), movies)).toEqual([]);
+    expect(validateCondition(cond({ field: "rating" }), movies)).toEqual([]);
+    expect(
+      validateCondition(
+        cond({ field: "rating", operator: "gt", value: null }),
+        movies,
+      ),
+    ).toEqual([]);
+    expect(
+      validateCondition(
+        cond({ field: "genre", operator: "in", value: [] }),
+        movies,
+      ),
+    ).toEqual([]);
+    expect(
+      validateCondition(
+        cond({ field: "rating", operator: "between", value: [null, null] }),
+        movies,
+      ),
+    ).toEqual([]);
   });
 
   it("rejects operators incompatible with the field type", () => {
@@ -32,15 +48,6 @@ describe("validateCondition", () => {
       movies,
     );
     expect(errors[0]).toMatch(/can't be applied/i);
-  });
-
-  it("requires a value for unary operators", () => {
-    expect(
-      validateCondition(
-        cond({ field: "rating", operator: "gt", value: null }),
-        movies,
-      ),
-    ).toEqual(["Enter a value."]);
   });
 
   it("flags non-numeric values on number fields", () => {
@@ -61,23 +68,7 @@ describe("validateCondition", () => {
     ).toEqual([]);
   });
 
-  it("requires at least one value for `in`", () => {
-    expect(
-      validateCondition(
-        cond({ field: "genre", operator: "in", value: [] }),
-        movies,
-      ),
-    ).toEqual(["Add at least one value."]);
-  });
-
   it("validates ranges for `between`", () => {
-    expect(
-      validateCondition(
-        cond({ field: "rating", operator: "between", value: [null, null] }),
-        movies,
-      ),
-    ).toEqual(["Enter both ends of the range."]);
-
     expect(
       validateCondition(
         cond({ field: "rating", operator: "between", value: [9, 7] }),
@@ -145,8 +136,8 @@ describe("validateTree", () => {
     const bad = cond({
       parentId: root.id,
       field: "rating",
-      operator: "gt",
-      value: null,
+      operator: "between",
+      value: [9, 7],
     });
     const emptyGroup = createGroup(root.id);
     root.children = [bad.id, emptyGroup.id];
@@ -158,7 +149,7 @@ describe("validateTree", () => {
     };
     const map = validateTree({ rootId: root.id, nodes }, movies);
 
-    expect(map[bad.id][0].message).toBe("Enter a value.");
+    expect(map[bad.id][0].message).toMatch(/range start/i);
     expect(map[emptyGroup.id][0].message).toMatch(/empty/i);
     expect(map[root.id]).toBeUndefined();
     expect(countErrors(map)).toBe(2);
