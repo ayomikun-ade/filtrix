@@ -1,5 +1,8 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Delete02Icon } from "@hugeicons/core-free-icons";
+
 import { getSource } from "@/lib/schema/sources";
 import { useHistoryStore } from "@/lib/store/historyStore";
 import { useQueryStore } from "@/lib/store/queryStore";
@@ -11,6 +14,7 @@ import { useSourceStore } from "@/lib/store/sourceStore";
 
 export function RunHistoryList() {
   const records = useRunHistoryStore((s) => s.records);
+  const clear = useRunHistoryStore((s) => s.clear);
   const setSource = useSourceStore((s) => s.setSource);
   const loadTree = useQueryStore((s) => s.loadTree);
 
@@ -29,23 +33,33 @@ export function RunHistoryList() {
   }
 
   return (
-    <ul className="flex flex-col gap-1">
-      {records.map((record) => (
-        <li key={record.id}>
-          <button
-            type="button"
-            onClick={() => restore(record)}
-            className="flex w-full flex-col items-start gap-0.5 rounded-md px-2.5 py-1.5 text-left transition-colors hover:bg-muted"
-          >
-            <span className="line-clamp-1 text-sm">{record.label}</span>
-            <span className="font-mono text-[10px] text-muted-foreground">
-              {record.count} {record.count === 1 ? "row" : "rows"} ·{" "}
-              {formatTime(record.at)}
-            </span>
-          </button>
-        </li>
-      ))}
-    </ul>
+    <div className="flex flex-col gap-2">
+      <button
+        type="button"
+        onClick={clear}
+        className="inline-flex w-fit items-center gap-1 rounded-md text-xs text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <HugeiconsIcon icon={Delete02Icon} className="size-3.5" />
+        Clear history
+      </button>
+      <ul className="flex flex-col gap-1">
+        {records.map((record) => (
+          <li key={record.id}>
+            <button
+              type="button"
+              onClick={() => restore(record)}
+              className="flex w-full flex-col items-start gap-0.5 rounded-md px-2.5 py-1.5 text-left transition-colors hover:bg-muted"
+            >
+              <span className="line-clamp-1 text-sm">{record.label}</span>
+              <span className="font-mono text-[10px] text-muted-foreground">
+                {record.count} {record.count === 1 ? "row" : "rows"} ·{" "}
+                {formatTime(record.at)}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
