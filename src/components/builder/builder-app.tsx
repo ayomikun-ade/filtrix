@@ -15,6 +15,7 @@ import {
 import { useQueryActions } from "@/lib/store/hooks";
 import { Brand } from "@/components/brand";
 import { BuilderCanvas } from "@/components/builder/builder-canvas";
+import { QueryPreview } from "@/components/builder/query-preview";
 import { SourcePicker } from "@/components/builder/source-picker";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -37,21 +38,23 @@ export function BuilderApp() {
         </div>
 
         <div className="flex items-center gap-1.5">
-          <Button variant="ghost" size="icon-sm" aria-label="Undo" disabled>
-            <HugeiconsIcon icon={ArrowTurnBackwardIcon} className="size-4" />
-          </Button>
-          <Button variant="ghost" size="icon-sm" aria-label="Redo" disabled>
-            <HugeiconsIcon icon={ArrowTurnForwardIcon} className="size-4" />
-          </Button>
-          <span className="mx-1 h-5 w-px bg-border" aria-hidden />
-          <Button variant="outline" size="sm" disabled>
-            <HugeiconsIcon icon={Upload01Icon} className="size-4" />
-            Import
-          </Button>
-          <Button variant="outline" size="sm" disabled>
-            <HugeiconsIcon icon={Download01Icon} className="size-4" />
-            Export
-          </Button>
+          <div className="hidden items-center gap-1.5 sm:flex">
+            <Button variant="ghost" size="icon-sm" aria-label="Undo" disabled>
+              <HugeiconsIcon icon={ArrowTurnBackwardIcon} className="size-4" />
+            </Button>
+            <Button variant="ghost" size="icon-sm" aria-label="Redo" disabled>
+              <HugeiconsIcon icon={ArrowTurnForwardIcon} className="size-4" />
+            </Button>
+            <span className="mx-1 h-5 w-px bg-border" aria-hidden />
+            <Button variant="outline" size="sm" disabled>
+              <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+              Import
+            </Button>
+            <Button variant="outline" size="sm" disabled>
+              <HugeiconsIcon icon={Download01Icon} className="size-4" />
+              Export
+            </Button>
+          </div>
           <ThemeToggle />
         </div>
       </header>
@@ -85,16 +88,7 @@ export function BuilderApp() {
         </section>
 
         <aside className="flex flex-col border-border lg:overflow-hidden lg:border-l">
-          <div className="flex flex-col border-b border-border">
-            <div className="flex items-center gap-4 border-b border-border px-4 pt-2 text-xs font-medium">
-              <Tab active>SQL</Tab>
-              <Tab>MongoDB</Tab>
-              <Tab>GraphQL</Tab>
-            </div>
-            <pre className="overflow-auto px-4 py-3 font-mono text-xs leading-relaxed text-muted-foreground">
-              {`-- live preview lands in the next milestone`}
-            </pre>
-          </div>
+          <QueryPreview />
           <div className="flex min-h-0 flex-1 flex-col">
             <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
               <span className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
@@ -134,24 +128,4 @@ function PanelSection({
 
 function EmptyHint({ children }: { children: React.ReactNode }) {
   return <p className="text-sm text-muted-foreground">{children}</p>;
-}
-
-function Tab({
-  children,
-  active,
-}: {
-  children: React.ReactNode;
-  active?: boolean;
-}) {
-  return (
-    <span
-      className={
-        active
-          ? "border-b-2 border-brand pb-2 text-foreground"
-          : "border-b-2 border-transparent pb-2 text-muted-foreground"
-      }
-    >
-      {children}
-    </span>
-  );
 }
