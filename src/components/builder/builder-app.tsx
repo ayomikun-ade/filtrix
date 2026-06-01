@@ -11,6 +11,7 @@ import {
   Upload01Icon,
 } from "@hugeicons/core-free-icons";
 
+import { useHistory } from "@/lib/store/historyStore";
 import { useQueryActions } from "@/lib/store/hooks";
 import { useSourceStore } from "@/lib/store/sourceStore";
 import { Brand } from "@/components/brand";
@@ -25,6 +26,7 @@ import { Button } from "@/components/ui/button";
 export function BuilderApp() {
   const { reset } = useQueryActions();
   const sourceId = useSourceStore((s) => s.sourceId);
+  const { undo, redo, canUndo, canRedo } = useHistory();
 
   return (
     <div className="flex min-h-dvh flex-col lg:h-dvh">
@@ -42,10 +44,22 @@ export function BuilderApp() {
 
         <div className="flex items-center gap-1.5">
           <div className="hidden items-center gap-1.5 sm:flex">
-            <Button variant="ghost" size="icon-sm" aria-label="Undo" disabled>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Undo"
+              onClick={undo}
+              disabled={!canUndo}
+            >
               <HugeiconsIcon icon={ArrowTurnBackwardIcon} className="size-4" />
             </Button>
-            <Button variant="ghost" size="icon-sm" aria-label="Redo" disabled>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Redo"
+              onClick={redo}
+              disabled={!canRedo}
+            >
               <HugeiconsIcon icon={ArrowTurnForwardIcon} className="size-4" />
             </Button>
             <span className="mx-1 h-5 w-px bg-border" aria-hidden />

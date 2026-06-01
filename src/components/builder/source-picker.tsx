@@ -1,6 +1,7 @@
 "use client";
 
 import { DATA_SOURCES } from "@/lib/schema/sources";
+import { useHistoryStore } from "@/lib/store/historyStore";
 import { useQueryActions } from "@/lib/store/hooks";
 import { useSourceStore } from "@/lib/store/sourceStore";
 import { cn } from "@/lib/utils";
@@ -15,6 +16,8 @@ export function SourcePicker() {
     if (id === sourceId) return;
     setSource(id);
     reset();
+    // Undo across a source change would restore invalid field references.
+    useHistoryStore.getState().clear();
   }
 
   return (
