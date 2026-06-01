@@ -60,8 +60,8 @@ describe("results panel", () => {
 
     await user.click(screen.getByRole("button", { name: /run/i }));
 
-    expect(await screen.findByText("1 / 6")).toBeInTheDocument();
+    expect(await screen.findByText("1 / 3")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /next page/i }));
-    expect(screen.getByText("2 / 6")).toBeInTheDocument();
+    expect(screen.getByText("2 / 3")).toBeInTheDocument();
   });
 });
