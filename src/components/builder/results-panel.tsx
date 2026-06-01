@@ -20,6 +20,7 @@ import { useQueryStore } from "@/lib/store/queryStore";
 import { useSourceStore } from "@/lib/store/sourceStore";
 import { useQueryValidity } from "@/lib/validation/useQueryValidity";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 100;
 const ROW_HEIGHT = 33;
@@ -35,6 +36,7 @@ export function ResultsPanel() {
   const [results, setResults] = useState<Row[]>([]);
   const [sort, setSort] = useState<Sort>({ field: null, dir: "asc" });
   const [page, setPage] = useState(0);
+  const [open, setOpen] = useState(false);
   const timer = useRef<number | null>(null);
 
   useEffect(() => () => window.clearTimeout(timer.current ?? undefined), []);
@@ -63,6 +65,7 @@ export function ResultsPanel() {
 
   function run() {
     if (!valid || !source) return;
+    setOpen(true);
     setStatus("loading");
     window.clearTimeout(timer.current ?? undefined);
     const snapshot = useQueryStore.getState();
@@ -88,9 +91,21 @@ export function ResultsPanel() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className={cn("flex flex-col", open && "h-80 lg:h-[42dvh]")}>
       <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-label={open ? "Collapse results" : "Expand results"}
+            aria-expanded={open}
+            className="inline-flex size-6 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <HugeiconsIcon
+              icon={open ? ArrowDown01Icon : ArrowUp01Icon}
+              className="size-4"
+            />
+          </button>
           <span className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
             Results
           </span>
@@ -106,7 +121,7 @@ export function ResultsPanel() {
         </Button>
       </div>
 
-      {!valid ? (
+      {!open ? null : !valid ? (
         <Centered>
           Fix {count} {count === 1 ? "issue" : "issues"} to run the query.
         </Centered>

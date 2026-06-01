@@ -62,8 +62,9 @@ export function BuilderApp() {
         </div>
       </header>
 
-      <div className="grid flex-1 grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)_360px] lg:overflow-hidden">
-        <aside className="flex flex-col gap-6 border-b border-border p-4 lg:overflow-auto lg:border-r lg:border-b-0">
+      <div className="flex flex-1 flex-col lg:flex-row lg:overflow-hidden">
+        {/* Left rail — full height, like VSCode's sidebar */}
+        <aside className="flex flex-col gap-6 border-b border-border p-4 lg:w-64 lg:shrink-0 lg:overflow-auto lg:border-r lg:border-b-0">
           <PanelSection label="Data source">
             <SourcePicker />
           </PanelSection>
@@ -75,28 +76,36 @@ export function BuilderApp() {
           </PanelSection>
         </aside>
 
-        <section className="flex flex-col border-b border-border lg:overflow-hidden lg:border-b-0">
-          <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
-                Query
-              </span>
-              <ValidationBadge />
-            </div>
-            <Button variant="ghost" size="sm" onClick={reset}>
-              <HugeiconsIcon icon={Delete02Icon} className="size-4" />
-              Clear all
-            </Button>
-          </div>
-          <div className="flex-1 lg:overflow-auto">
-            <BuilderCanvas />
-          </div>
-        </section>
+        {/* Content column: query + preview on top, results docked below */}
+        <div className="flex min-w-0 flex-1 flex-col lg:overflow-hidden">
+          <div className="grid flex-1 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] lg:overflow-hidden">
+            <section className="flex flex-col border-b border-border lg:overflow-hidden lg:border-b-0">
+              <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
+                    Query
+                  </span>
+                  <ValidationBadge />
+                </div>
+                <Button variant="ghost" size="sm" onClick={reset}>
+                  <HugeiconsIcon icon={Delete02Icon} className="size-4" />
+                  Clear all
+                </Button>
+              </div>
+              <div className="flex-1 lg:overflow-auto">
+                <BuilderCanvas />
+              </div>
+            </section>
 
-        <aside className="flex flex-col border-border lg:overflow-hidden lg:border-l">
-          <QueryPreview />
-          <ResultsPanel key={sourceId} />
-        </aside>
+            <aside className="flex flex-col border-t border-border lg:overflow-hidden lg:border-t-0 lg:border-l">
+              <QueryPreview />
+            </aside>
+          </div>
+
+          <div className="border-t border-border">
+            <ResultsPanel key={sourceId} />
+          </div>
+        </div>
       </div>
     </div>
   );
