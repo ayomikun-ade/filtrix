@@ -68,14 +68,14 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Pull Vercel environment (preview)
-        run: pnpm dlx vercel@latest pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+        run: pnpm dlx vercel@54.6.1 pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build project artifacts
-        run: pnpm dlx vercel@latest build --token=${{ secrets.VERCEL_TOKEN }}
+        run: pnpm dlx vercel@54.6.1 build --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy prebuilt artifacts to Vercel
         id: deploy
-        run: echo "url=$(pnpm dlx vercel@latest deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})" >> "$GITHUB_OUTPUT"
+        run: echo "url=$(pnpm dlx vercel@54.6.1 deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})" >> "$GITHUB_OUTPUT"
 
       - name: Comment preview URL on PR
         uses: actions/github-script@v7
@@ -124,11 +124,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Pull Vercel environment (production)
-        run: pnpm dlx vercel@latest pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        run: pnpm dlx vercel@54.6.1 pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build project artifacts (production)
-        run: pnpm dlx vercel@latest build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        run: pnpm dlx vercel@54.6.1 build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy prebuilt artifacts to production
         id: deploy
-        run: echo "url=$(pnpm dlx vercel@latest deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})" >> "$GITHUB_OUTPUT"
+        run: echo "url=$(pnpm dlx vercel@54.6.1 deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})" >> "$GITHUB_OUTPUT"

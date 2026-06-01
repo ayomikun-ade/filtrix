@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 
@@ -117,7 +117,10 @@ describe("builder canvas", () => {
 
     await user.click(screen.getByRole("button", { name: /collapse group/i }));
 
-    expect(screen.queryByLabelText("Field")).not.toBeInTheDocument();
+    // The body animates out before unmounting, so await its removal.
+    await waitFor(() =>
+      expect(screen.queryByLabelText("Field")).not.toBeInTheDocument(),
+    );
   });
 
   it("updates the combinator from the store", async () => {
