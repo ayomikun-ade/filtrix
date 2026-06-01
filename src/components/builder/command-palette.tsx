@@ -1,68 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useTheme } from "next-themes";
 
-import { DATA_SOURCES } from "@/lib/schema/sources";
-import { useHistory, useHistoryStore } from "@/lib/store/historyStore";
-import { useQueryActions } from "@/lib/store/hooks";
-import { useQueryStore } from "@/lib/store/queryStore";
-import { useSourceStore } from "@/lib/store/sourceStore";
+import { chordChips, useCommands, type Command } from "@/hooks/useCommands";
 import { cn } from "@/lib/utils";
-
-interface Command {
-  id: string;
-  label: string;
-  run: () => void;
-}
-
-function useCommands(): Command[] {
-  const rootId = useQueryStore((s) => s.rootId);
-  const { addCondition, addGroup, reset } = useQueryActions();
-  const setSource = useSourceStore((s) => s.setSource);
-  const { undo, redo } = useHistory();
-  const { resolvedTheme, setTheme } = useTheme();
-
-  return useMemo(() => {
-    const switchSource = (id: string) => {
-      setSource(id);
-      reset();
-      useHistoryStore.getState().clear();
-    };
-
-    return [
-      {
-        id: "add-condition",
-        label: "Add condition",
-        run: () => addCondition(rootId),
-      },
-      { id: "add-group", label: "Add group", run: () => addGroup(rootId) },
-      { id: "clear", label: "Clear all rules", run: () => reset() },
-      { id: "undo", label: "Undo", run: undo },
-      { id: "redo", label: "Redo", run: redo },
-      ...DATA_SOURCES.map((source) => ({
-        id: `source-${source.id}`,
-        label: `Switch data source to ${source.name}`,
-        run: () => switchSource(source.id),
-      })),
-      {
-        id: "theme",
-        label: "Toggle dark / light theme",
-        run: () => setTheme(resolvedTheme === "dark" ? "light" : "dark"),
-      },
-    ];
-  }, [
-    rootId,
-    addCondition,
-    addGroup,
-    reset,
-    undo,
-    redo,
-    setSource,
-    resolvedTheme,
-    setTheme,
-  ]);
-}
 
 export function CommandPalette({ onClose }: { onClose: () => void }) {
   const commands = useCommands();
@@ -138,13 +79,28 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
                   onClick={() => exec(command)}
                   aria-current={i === activeIndex}
                   className={cn(
-                    "flex w-full items-center rounded-md px-3 py-2 text-left text-sm transition-colors",
+                    "flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors",
                     i === activeIndex
                       ? "bg-muted text-foreground"
                       : "text-muted-foreground",
                   )}
                 >
-                  {command.label}
+                  <span className="truncate">{command.label}</span>
+                  {command.chord ? (
+                    <span className="ml-auto flex items-center gap-1 text-[10px] text-muted-foreground">
+                      {chordChips(command.chord).map((chip, c, arr) => (
+                        <span
+                          key={`${chip}-${c}`}
+                          className="flex items-center gap-1"
+                        >
+                          <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono">
+                            {chip}
+                          </kbd>
+                          {c < arr.length - 1 ? <span>+</span> : null}
+                        </span>
+                      ))}
+                    </span>
+                  ) : null}
                 </button>
               </li>
             ))
