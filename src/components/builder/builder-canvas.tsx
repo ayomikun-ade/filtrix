@@ -8,6 +8,7 @@ import {
   useSensors,
   type DragEndEvent,
 } from "@dnd-kit/core";
+import { MotionConfig } from "motion/react";
 
 import { planDrag } from "@/lib/store/dnd";
 import { useRootId } from "@/lib/store/hooks";
@@ -34,14 +35,16 @@ export function BuilderCanvas() {
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-    >
-      <div className="p-4">
-        <QueryGroup id={rootId} />
-      </div>
-    </DndContext>
+    <MotionConfig reducedMotion="user">
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="p-4">
+          <QueryGroup id={rootId} />
+        </div>
+      </DndContext>
+    </MotionConfig>
   );
 }
