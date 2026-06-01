@@ -8,12 +8,18 @@ import {
   Cancel01Icon,
 } from "@hugeicons/core-free-icons";
 
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+
 import { isGroup, type NodeId } from "@/lib/query/types";
 import { useChildren, useNode, useQueryActions } from "@/lib/store/hooks";
 import { validateGroup } from "@/lib/validation/validate";
 import { AddBar } from "@/components/builder/add-bar";
 import { BuilderNode } from "@/components/builder/builder-node";
 import { CombinatorToggle } from "@/components/builder/combinator-toggle";
+import { SortableNode } from "@/components/builder/sortable-node";
 
 function QueryGroupImpl({ id }: { id: NodeId }) {
   const node = useNode(id);
@@ -74,9 +80,16 @@ function QueryGroupImpl({ id }: { id: NodeId }) {
               </p>
             )
           ) : (
-            childIds.map((childId) => (
-              <BuilderNode key={childId} id={childId} />
-            ))
+            <SortableContext
+              items={[...childIds]}
+              strategy={verticalListSortingStrategy}
+            >
+              {childIds.map((childId) => (
+                <SortableNode key={childId} id={childId}>
+                  <BuilderNode id={childId} />
+                </SortableNode>
+              ))}
+            </SortableContext>
           )}
           <AddBar
             onAddCondition={() => addCondition(id)}
