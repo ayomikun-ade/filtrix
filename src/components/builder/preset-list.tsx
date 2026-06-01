@@ -11,7 +11,7 @@ import { useQueryStore } from "@/lib/store/queryStore";
 import { useSourceStore } from "@/lib/store/sourceStore";
 import { useUiStore } from "@/lib/store/uiStore";
 
-export function PresetList() {
+export function PresetList({ onNavigate }: { onNavigate?: () => void }) {
   const presets = usePresetsStore((s) => s.presets);
   const remove = usePresetsStore((s) => s.remove);
   const setSource = useSourceStore((s) => s.setSource);
@@ -23,6 +23,7 @@ export function PresetList() {
   }, []);
 
   function load(preset: Preset) {
+    onNavigate?.();
     if (getSource(preset.sourceId)) setSource(preset.sourceId);
     loadTree(preset.tree);
     useHistoryStore.getState().clear();
@@ -32,7 +33,10 @@ export function PresetList() {
     <div className="flex flex-col gap-2">
       <button
         type="button"
-        onClick={() => useUiStore.getState().openDialog("savePreset")}
+        onClick={() => {
+          onNavigate?.();
+          useUiStore.getState().openDialog("savePreset");
+        }}
         className="inline-flex w-fit items-center gap-1 rounded-md text-xs text-muted-foreground transition-colors hover:text-foreground"
       >
         <HugeiconsIcon icon={PlusSignIcon} className="size-3.5" />

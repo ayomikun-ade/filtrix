@@ -12,13 +12,14 @@ import {
 } from "@/lib/store/runHistoryStore";
 import { useSourceStore } from "@/lib/store/sourceStore";
 
-export function RunHistoryList() {
+export function RunHistoryList({ onNavigate }: { onNavigate?: () => void }) {
   const records = useRunHistoryStore((s) => s.records);
   const clear = useRunHistoryStore((s) => s.clear);
   const setSource = useSourceStore((s) => s.setSource);
   const loadTree = useQueryStore((s) => s.loadTree);
 
   function restore(record: RunRecord) {
+    onNavigate?.();
     if (getSource(record.sourceId)) setSource(record.sourceId);
     loadTree(record.tree);
     useHistoryStore.getState().clear();
