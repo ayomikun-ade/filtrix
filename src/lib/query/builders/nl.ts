@@ -1,5 +1,6 @@
 import {
   isGroup,
+  type Combinator,
   type ConditionNode,
   type GroupNode,
   type NodeId,
@@ -24,8 +25,11 @@ function nlNode(nodes: Nodes, id: NodeId, source: DataSource): string | null {
   const node = nodes[id];
   if (!node) return null;
   if (isGroup(node)) {
-    const inner = nlGroupInner(nodes, node, source);
-    return inner ? `(${inner})` : null;
+    const parts = nlGroupParts(nodes, node, source);
+    if (parts.length === 0) return null;
+    // A single child needs no combinator, so skip the wrapping parentheses.
+    if (parts.length === 1) return parts[0];
+    return `(${joinParts(parts, node.combinator)})`;
   }
   return isRenderableCondition(node) ? nlCondition(node, source) : null;
 }
@@ -35,11 +39,23 @@ function nlGroupInner(
   group: GroupNode,
   source: DataSource,
 ): string | null {
-  const parts = group.children
+  const parts = nlGroupParts(nodes, group, source);
+  if (parts.length === 0) return null;
+  return joinParts(parts, group.combinator);
+}
+
+function nlGroupParts(
+  nodes: Nodes,
+  group: GroupNode,
+  source: DataSource,
+): string[] {
+  return group.children
     .map((childId) => nlNode(nodes, childId, source))
     .filter((part): part is string => part !== null);
-  if (parts.length === 0) return null;
-  return parts.join(group.combinator === "AND" ? " and " : " or ");
+}
+
+function joinParts(parts: string[], combinator: Combinator): string {
+  return parts.join(combinator === "AND" ? " and " : " or ");
 }
 
 function nlCondition(node: ConditionNode, source: DataSource): string {

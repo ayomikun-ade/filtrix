@@ -34,6 +34,8 @@ function sqlNode(nodes: Nodes, id: NodeId, source: DataSource): string | null {
       .map((childId) => sqlNode(nodes, childId, source))
       .filter((part): part is string => part !== null);
     if (parts.length === 0) return null;
+    // A single child needs no combinator, so skip the redundant parentheses.
+    if (parts.length === 1) return parts[0];
     return `(${parts.join(` ${node.combinator} `)})`;
   }
 

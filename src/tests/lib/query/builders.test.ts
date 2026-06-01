@@ -94,6 +94,20 @@ describe("query generation", () => {
     );
   });
 
+  it("collapses a single-child group (no redundant parentheses)", () => {
+    addCondition(store().rootId, "genre", "eq", "Action");
+    const group = store().addGroup(store().rootId, "OR")!;
+    addCondition(group, "rating", "gt", 8);
+
+    const sql = toSql(tree(), movies);
+    expect(sql).toContain("AND rating > 8");
+    expect(sql).not.toContain("(rating > 8)");
+
+    expect(toNaturalLanguage(tree(), movies)).toBe(
+      'Movies where Genre is "Action" and Rating is greater than 8.',
+    );
+  });
+
   it("supports in / between / null operators", () => {
     addCondition(store().rootId, "genre", "in", ["Action", "Comedy"]);
     addCondition(store().rootId, "rating", "between", [7, 9]);
