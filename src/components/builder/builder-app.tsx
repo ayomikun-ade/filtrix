@@ -26,6 +26,7 @@ import { ImportDialog } from "@/components/builder/import-dialog";
 import { PresetList } from "@/components/builder/preset-list";
 import { QueryPreview } from "@/components/builder/query-preview";
 import { ResultsPanel } from "@/components/builder/results-panel";
+import { RunHistoryList } from "@/components/builder/run-history-list";
 import { SavePresetDialog } from "@/components/builder/save-preset-dialog";
 import { SourcePicker } from "@/components/builder/source-picker";
 import { ValidationBadge } from "@/components/builder/validation-badge";
@@ -120,7 +121,7 @@ export function BuilderApp() {
             <PresetList />
           </PanelSection>
           <PanelSection label="History">
-            <EmptyHint>Your query history will appear here.</EmptyHint>
+            <RunHistoryList />
           </PanelSection>
         </aside>
 
@@ -183,8 +184,4 @@ function PanelSection({
       {children}
     </div>
   );
-}
-
-function EmptyHint({ children }: { children: React.ReactNode }) {
-  return <p className="text-sm text-muted-foreground">{children}</p>;
 }

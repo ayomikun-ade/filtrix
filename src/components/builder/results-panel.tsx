@@ -14,10 +14,12 @@ import {
   SearchRemoveIcon,
 } from "@hugeicons/core-free-icons";
 
+import { toNaturalLanguage } from "@/lib/query/builders";
 import { buildPredicate, type Row } from "@/lib/query/evaluate";
 import { DATASET_SIZE, expandDataset } from "@/lib/schema/generate";
 import { getSource } from "@/lib/schema/sources";
 import { useQueryStore } from "@/lib/store/queryStore";
+import { useRunHistoryStore } from "@/lib/store/runHistoryStore";
 import { useRunStore } from "@/lib/store/runStore";
 import { useSourceStore } from "@/lib/store/sourceStore";
 import { useQueryValidity } from "@/lib/validation/useQueryValidity";
@@ -84,15 +86,21 @@ export function ResultsPanel() {
     setStatus("loading");
     window.clearTimeout(timer.current ?? undefined);
     const snapshot = useQueryStore.getState();
+    const tree = { rootId: snapshot.rootId, nodes: snapshot.nodes };
     timer.current = window.setTimeout(() => {
-      const predicate = buildPredicate(
-        { rootId: snapshot.rootId, nodes: snapshot.nodes },
-        source,
+      const matches = expandDataset(source, DATASET_SIZE).filter(
+        buildPredicate(tree, source),
       );
-      setResults(expandDataset(source, DATASET_SIZE).filter(predicate));
+      setResults(matches);
       setSort({ field: null, dir: "asc" });
       setPage(0);
       setStatus("done");
+      useRunHistoryStore.getState().record({
+        sourceId: source.id,
+        tree,
+        label: toNaturalLanguage(tree, source),
+        count: matches.length,
+      });
     }, 350);
   }
 
