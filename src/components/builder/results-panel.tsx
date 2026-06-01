@@ -8,15 +8,18 @@ import {
   ArrowLeft01Icon,
   ArrowRight01Icon,
   ArrowUp01Icon,
+  Download01Icon,
   Loading03Icon,
   PlayIcon,
   SearchRemoveIcon,
 } from "@hugeicons/core-free-icons";
 
+import { toNaturalLanguage } from "@/lib/query/builders";
 import { buildPredicate, type Row } from "@/lib/query/evaluate";
 import { DATASET_SIZE, expandDataset } from "@/lib/schema/generate";
 import { getSource } from "@/lib/schema/sources";
 import { useQueryStore } from "@/lib/store/queryStore";
+import { useRunHistoryStore } from "@/lib/store/runHistoryStore";
 import { useRunStore } from "@/lib/store/runStore";
 import { useSourceStore } from "@/lib/store/sourceStore";
 import { useQueryValidity } from "@/lib/validation/useQueryValidity";
@@ -83,15 +86,21 @@ export function ResultsPanel() {
     setStatus("loading");
     window.clearTimeout(timer.current ?? undefined);
     const snapshot = useQueryStore.getState();
+    const tree = { rootId: snapshot.rootId, nodes: snapshot.nodes };
     timer.current = window.setTimeout(() => {
-      const predicate = buildPredicate(
-        { rootId: snapshot.rootId, nodes: snapshot.nodes },
-        source,
+      const matches = expandDataset(source, DATASET_SIZE).filter(
+        buildPredicate(tree, source),
       );
-      setResults(expandDataset(source, DATASET_SIZE).filter(predicate));
+      setResults(matches);
       setSort({ field: null, dir: "asc" });
       setPage(0);
       setStatus("done");
+      useRunHistoryStore.getState().record({
+        sourceId: source.id,
+        tree,
+        label: toNaturalLanguage(tree, source),
+        count: matches.length,
+      });
     }, 350);
   }
 
@@ -102,6 +111,17 @@ export function ResultsPanel() {
         ? { field, dir: prev.dir === "asc" ? "desc" : "asc" }
         : { field, dir: "asc" },
     );
+  }
+
+  function downloadCsv() {
+    if (!source) return;
+    const blob = new Blob([toCsv(sorted, source.fields)], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `filtrix-${sourceId}-results.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
   }
 
   return (
@@ -129,10 +149,18 @@ export function ResultsPanel() {
             </span>
           ) : null}
         </div>
-        <Button size="sm" onClick={run} disabled={!valid}>
-          <HugeiconsIcon icon={PlayIcon} className="size-4" />
-          Run
-        </Button>
+        <div className="flex items-center gap-1.5">
+          {status === "done" && results.length > 0 ? (
+            <Button variant="outline" size="sm" onClick={downloadCsv}>
+              <HugeiconsIcon icon={Download01Icon} className="size-4" />
+              Export
+            </Button>
+          ) : null}
+          <Button size="sm" onClick={run} disabled={!valid}>
+            <HugeiconsIcon icon={PlayIcon} className="size-4" />
+            Run
+          </Button>
+        </div>
       </div>
 
       {!open ? null : !valid ? (
@@ -259,4 +287,20 @@ function formatCell(value: unknown): string {
 function compareCells(a: unknown, b: unknown): number {
   if (typeof a === "number" && typeof b === "number") return a - b;
   return String(a).localeCompare(String(b));
+}
+
+function toCsv(
+  rows: Row[],
+  fields: readonly { name: string; label: string }[],
+): string {
+  const header = fields.map((f) => csvCell(f.label)).join(",");
+  const body = rows.map((row) =>
+    fields.map((f) => csvCell(row[f.name])).join(","),
+  );
+  return [header, ...body].join("\n");
+}
+
+function csvCell(value: unknown): string {
+  const s = value === null || value === undefined ? "" : String(value);
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }

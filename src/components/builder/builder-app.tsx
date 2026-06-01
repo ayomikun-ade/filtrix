@@ -17,11 +17,17 @@ import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useHistory } from "@/lib/store/historyStore";
 import { useQueryActions } from "@/lib/store/hooks";
 import { useSourceStore } from "@/lib/store/sourceStore";
+import { useUiStore } from "@/lib/store/uiStore";
 import { Brand } from "@/components/brand";
 import { BuilderCanvas } from "@/components/builder/builder-canvas";
 import { CommandPalette } from "@/components/builder/command-palette";
+import { ExportDialog } from "@/components/builder/export-dialog";
+import { ImportDialog } from "@/components/builder/import-dialog";
+import { PresetList } from "@/components/builder/preset-list";
 import { QueryPreview } from "@/components/builder/query-preview";
 import { ResultsPanel } from "@/components/builder/results-panel";
+import { RunHistoryList } from "@/components/builder/run-history-list";
+import { SavePresetDialog } from "@/components/builder/save-preset-dialog";
 import { SourcePicker } from "@/components/builder/source-picker";
 import { ValidationBadge } from "@/components/builder/validation-badge";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -31,6 +37,9 @@ export function BuilderApp() {
   const { reset } = useQueryActions();
   const sourceId = useSourceStore((s) => s.sourceId);
   const { undo, redo, canUndo, canRedo } = useHistory();
+  const dialog = useUiStore((s) => s.dialog);
+  const openDialog = useUiStore((s) => s.openDialog);
+  const closeDialog = useUiStore((s) => s.closeDialog);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const openPalette = useCallback(() => setPaletteOpen(true), []);
   useKeyboardShortcuts({ onOpenPalette: openPalette });
@@ -70,11 +79,19 @@ export function BuilderApp() {
               <HugeiconsIcon icon={ArrowTurnForwardIcon} className="size-4" />
             </Button>
             <span className="mx-1 h-5 w-px bg-border" aria-hidden />
-            <Button variant="outline" size="sm" disabled>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => openDialog("import")}
+            >
               <HugeiconsIcon icon={Upload01Icon} className="size-4" />
               Import
             </Button>
-            <Button variant="outline" size="sm" disabled>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => openDialog("export")}
+            >
               <HugeiconsIcon icon={Download01Icon} className="size-4" />
               Export
             </Button>
@@ -101,10 +118,10 @@ export function BuilderApp() {
             <SourcePicker />
           </PanelSection>
           <PanelSection label="Saved presets">
-            <EmptyHint>No saved presets yet.</EmptyHint>
+            <PresetList />
           </PanelSection>
           <PanelSection label="History">
-            <EmptyHint>Your query history will appear here.</EmptyHint>
+            <RunHistoryList />
           </PanelSection>
         </aside>
 
@@ -143,6 +160,11 @@ export function BuilderApp() {
       {paletteOpen ? (
         <CommandPalette onClose={() => setPaletteOpen(false)} />
       ) : null}
+      {dialog === "import" ? <ImportDialog onClose={closeDialog} /> : null}
+      {dialog === "export" ? <ExportDialog onClose={closeDialog} /> : null}
+      {dialog === "savePreset" ? (
+        <SavePresetDialog onClose={closeDialog} />
+      ) : null}
     </div>
   );
 }
@@ -162,8 +184,4 @@ function PanelSection({
       {children}
     </div>
   );
-}
-
-function EmptyHint({ children }: { children: React.ReactNode }) {
-  return <p className="text-sm text-muted-foreground">{children}</p>;
 }
