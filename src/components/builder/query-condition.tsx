@@ -15,8 +15,10 @@ import { getDefaultOperator, getDefaultValue } from "@/lib/schema/resolve";
 import { getField, getSource } from "@/lib/schema/sources";
 import { useNode, useQueryActions } from "@/lib/store/hooks";
 import { useSourceStore } from "@/lib/store/sourceStore";
+import { validateCondition } from "@/lib/validation/validate";
 import { ValueControl } from "@/components/builder/value-control";
 import { NativeSelect } from "@/components/ui/native-select";
+import { cn } from "@/lib/utils";
 
 function QueryConditionImpl({ id }: { id: NodeId }) {
   const node = useNode(id);
@@ -53,58 +55,78 @@ function QueryConditionImpl({ id }: { id: NodeId }) {
     updateCondition(id, { value });
   }
 
-  return (
-    <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-card px-2.5 py-2">
-      <div className="w-40">
-        <NativeSelect
-          aria-label="Field"
-          value={node.field ?? ""}
-          onChange={(e) => handleFieldChange(e.target.value)}
-        >
-          <option value="">Field…</option>
-          {source.fields.map((f) => (
-            <option key={f.name} value={f.name}>
-              {f.label}
-            </option>
-          ))}
-        </NativeSelect>
-      </div>
+  const errors = validateCondition(node, source);
+  const hasError = errors.length > 0;
+  // Only redden an "engaged" row (field chosen); a pristine row just shows a hint.
+  const engaged = Boolean(node.field);
 
-      {field ? (
-        <div className="w-36">
+  return (
+    <div className="space-y-1">
+      <div
+        className={cn(
+          "flex flex-wrap items-center gap-2 rounded-md border bg-card px-2.5 py-2",
+          hasError && engaged ? "border-destructive/50" : "border-border",
+        )}
+      >
+        <div className="w-40">
           <NativeSelect
-            aria-label="Operator"
-            value={node.operator ?? ""}
-            onChange={(e) => handleOperatorChange(e.target.value as OperatorId)}
+            aria-label="Field"
+            aria-invalid={hasError && !node.field}
+            value={node.field ?? ""}
+            onChange={(e) => handleFieldChange(e.target.value)}
           >
-            {operators.map((op) => (
-              <option key={op.id} value={op.id}>
-                {op.label}
+            <option value="">Field…</option>
+            {source.fields.map((f) => (
+              <option key={f.name} value={f.name}>
+                {f.label}
               </option>
             ))}
           </NativeSelect>
         </div>
-      ) : null}
 
-      {field && node.operator ? (
-        <div className="min-w-40 flex-1">
-          <ValueControl
-            field={field}
-            operator={node.operator}
-            value={node.value}
-            onChange={handleValueChange}
-          />
-        </div>
-      ) : null}
+        {field ? (
+          <div className="w-36">
+            <NativeSelect
+              aria-label="Operator"
+              value={node.operator ?? ""}
+              onChange={(e) =>
+                handleOperatorChange(e.target.value as OperatorId)
+              }
+            >
+              {operators.map((op) => (
+                <option key={op.id} value={op.id}>
+                  {op.label}
+                </option>
+              ))}
+            </NativeSelect>
+          </div>
+        ) : null}
 
-      <button
-        type="button"
-        onClick={() => removeNode(id)}
-        aria-label="Remove condition"
-        className="ml-auto inline-flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-      >
-        <HugeiconsIcon icon={Cancel01Icon} className="size-4" />
-      </button>
+        {field && node.operator ? (
+          <div className="min-w-40 flex-1">
+            <ValueControl
+              field={field}
+              operator={node.operator}
+              value={node.value}
+              onChange={handleValueChange}
+              invalid={hasError && engaged}
+            />
+          </div>
+        ) : null}
+
+        <button
+          type="button"
+          onClick={() => removeNode(id)}
+          aria-label="Remove condition"
+          className="ml-auto inline-flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <HugeiconsIcon icon={Cancel01Icon} className="size-4" />
+        </button>
+      </div>
+
+      {hasError ? (
+        <p className="px-1 text-xs text-destructive">{errors[0]}</p>
+      ) : null}
     </div>
   );
 }

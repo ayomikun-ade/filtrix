@@ -17,6 +17,7 @@ import { Brand } from "@/components/brand";
 import { BuilderCanvas } from "@/components/builder/builder-canvas";
 import { QueryPreview } from "@/components/builder/query-preview";
 import { SourcePicker } from "@/components/builder/source-picker";
+import { ValidationBadge } from "@/components/builder/validation-badge";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 
@@ -74,9 +75,12 @@ export function BuilderApp() {
 
         <section className="flex flex-col border-b border-border lg:overflow-hidden lg:border-b-0">
           <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
-            <span className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
-              Query
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
+                Query
+              </span>
+              <ValidationBadge />
+            </div>
             <Button variant="ghost" size="sm" onClick={reset}>
               <HugeiconsIcon icon={Delete02Icon} className="size-4" />
               Clear all
