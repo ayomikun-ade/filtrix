@@ -7,6 +7,7 @@ import { DEFAULT_SOURCE_ID } from "@/lib/schema/sources";
 import { useQueryStore } from "@/lib/store/queryStore";
 import { useSourceStore } from "@/lib/store/sourceStore";
 import { BuilderCanvas } from "@/components/builder/builder-canvas";
+import { selectOption } from "@/tests/helpers";
 
 const store = () => useQueryStore.getState();
 
@@ -42,7 +43,7 @@ describe("builder canvas", () => {
     render(<BuilderCanvas />);
     await user.click(screen.getByRole("button", { name: /add condition/i }));
 
-    await user.selectOptions(screen.getByLabelText("Field"), "rating");
+    await selectOption(user, "Field", "Rating");
 
     expect(screen.getByLabelText("Operator")).toBeInTheDocument();
     // number field + default operator (equals) -> a number input
@@ -53,9 +54,9 @@ describe("builder canvas", () => {
     const user = userEvent.setup();
     render(<BuilderCanvas />);
     await user.click(screen.getByRole("button", { name: /add condition/i }));
-    await user.selectOptions(screen.getByLabelText("Field"), "rating");
+    await selectOption(user, "Field", "Rating");
 
-    await user.selectOptions(screen.getByLabelText("Operator"), "between");
+    await selectOption(user, "Operator", "between");
 
     // between -> two number inputs (a range)
     expect(screen.getAllByRole("spinbutton")).toHaveLength(2);
@@ -65,7 +66,7 @@ describe("builder canvas", () => {
     const user = userEvent.setup();
     render(<BuilderCanvas />);
     await user.click(screen.getByRole("button", { name: /add condition/i }));
-    await user.selectOptions(screen.getByLabelText("Field"), "rating");
+    await selectOption(user, "Field", "Rating");
 
     await user.type(screen.getByRole("spinbutton"), "8");
 
