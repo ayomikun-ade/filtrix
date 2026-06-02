@@ -24,6 +24,7 @@ import { BuilderCanvas } from "@/components/builder/builder-canvas";
 import { BuilderRail } from "@/components/builder/builder-rail";
 import { CommandPalette } from "@/components/builder/command-palette";
 import { ExportDialog } from "@/components/builder/export-dialog";
+import { ImportDataDialog } from "@/components/builder/import-data-dialog";
 import { ImportDialog } from "@/components/builder/import-dialog";
 import { QueryPreview } from "@/components/builder/query-preview";
 import { ResultsPanel } from "@/components/builder/results-panel";
@@ -167,6 +168,9 @@ export function BuilderApp() {
         <CommandPalette onClose={() => setPaletteOpen(false)} />
       ) : null}
       {dialog === "import" ? <ImportDialog onClose={closeDialog} /> : null}
+      {dialog === "importData" ? (
+        <ImportDataDialog onClose={closeDialog} />
+      ) : null}
       {dialog === "export" ? <ExportDialog onClose={closeDialog} /> : null}
       {dialog === "savePreset" ? (
         <SavePresetDialog onClose={closeDialog} />

@@ -4,6 +4,13 @@ export const DATASET_SIZE = 150;
 
 type Row = Record<string, unknown>;
 
+// The rows a query runs against: imported sources use their real data as-is;
+// built-in sample sources are expanded with jitter for variety.
+export function getDatasetRows(source: DataSource): Row[] {
+  if (source.custom) return source.rows;
+  return expandDataset(source, DATASET_SIZE);
+}
+
 // Deterministically expands a source's seed rows into `count` rows by cycling the
 // seeds and jittering numeric fields, so filtering/sorting have real variety
 // without shipping hundreds of literal rows. Deterministic = reproducible tests.
