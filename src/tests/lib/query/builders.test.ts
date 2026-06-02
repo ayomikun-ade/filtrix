@@ -9,6 +9,7 @@ import {
 } from "@/lib/query/builders";
 import type { OperatorId, QueryTree } from "@/lib/query/types";
 import { movies } from "@/lib/schema/datasets/movies";
+import type { DataSource } from "@/lib/schema/types";
 import { useQueryStore } from "@/lib/store/queryStore";
 
 const store = () => useQueryStore.getState();
@@ -38,6 +39,20 @@ describe("query generation", () => {
     expect(toMongo(tree())).toEqual({});
     expect(toGraphql(tree(), movies)).not.toContain("where");
     expect(toNaturalLanguage(tree(), movies)).toBe("All movies.");
+  });
+
+  it("uses the source name (slugged) as the table name", () => {
+    const custom: DataSource = {
+      id: "src_abc123",
+      name: "My Products",
+      description: "",
+      fields: [{ name: "price", label: "Price", type: "number" }],
+      rows: [{ price: 1 }],
+      custom: true,
+    };
+    addCondition(store().rootId, "price", "gt", 0);
+    expect(toSql(tree(), custom)).toContain("FROM my_products");
+    expect(toGraphql(tree(), custom)).toContain("my_products");
   });
 
   it("generates a flat single condition without extra parentheses", () => {

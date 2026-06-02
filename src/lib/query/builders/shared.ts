@@ -32,6 +32,18 @@ export function fieldType(source: DataSource, fieldName: string): FieldType {
   return getField(source, fieldName)?.type ?? "string";
 }
 
+// A clean table/collection identifier for generated queries, derived from the
+// source name (built-ins like "Movies" slug to "movies", matching their id;
+// imported sources get a readable name instead of their generated id).
+export function tableName(source: DataSource): string {
+  const slug = source.name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+  return slug || source.id;
+}
+
 export function asArray(value: ScalarValue | ScalarValue[]): ScalarValue[] {
   return Array.isArray(value) ? value : [value];
 }
