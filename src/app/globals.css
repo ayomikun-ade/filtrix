@@ -78,6 +78,8 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
+  --scrollbar-thumb: oklch(0.86 0 0);
+  --scrollbar-thumb-hover: oklch(0.72 0 0);
   --radius: 0.375rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
@@ -93,6 +95,8 @@
   --brand: #a6f236;
   --brand-foreground: #0b0f0a;
 
+  --scrollbar-thumb: oklch(1 0 0 / 16%);
+  --scrollbar-thumb-hover: oklch(1 0 0 / 30%);
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
@@ -142,5 +146,29 @@
   select:not(:disabled),
   summary {
     cursor: pointer;
+  }
+
+  /* Subtle, themed scrollbars in place of the chunky OS default. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track,
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    /* Transparent border + padding-box clip leaves breathing room around the thumb. */
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    background-color: var(--scrollbar-thumb);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover);
   }
 }
