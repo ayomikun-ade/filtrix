@@ -34,7 +34,9 @@ type Sort = { field: string | null; dir: "asc" | "desc" };
 
 export function ResultsPanel() {
   const sourceId = useSourceStore((s) => s.sourceId);
-  const { valid, count } = useQueryValidity();
+  const { runnable, count, complete, incomplete, emptyRows } =
+    useQueryValidity();
+  const reason = runReason({ count, complete, incomplete, emptyRows });
 
   const [status, setStatus] = useState<Status>("idle");
   const [results, setResults] = useState<Row[]>([]);
@@ -81,7 +83,7 @@ export function ResultsPanel() {
   if (!source) return null;
 
   function run() {
-    if (!valid || !source) return;
+    if (!runnable || !source) return;
     setOpen(true);
     setStatus("loading");
     window.clearTimeout(timer.current ?? undefined);
@@ -156,17 +158,20 @@ export function ResultsPanel() {
               Export
             </Button>
           ) : null}
-          <Button size="sm" onClick={run} disabled={!valid}>
+          <Button
+            size="sm"
+            onClick={run}
+            disabled={!runnable}
+            title={!runnable ? reason : undefined}
+          >
             <HugeiconsIcon icon={PlayIcon} className="size-4" />
             Run
           </Button>
         </div>
       </div>
 
-      {!open ? null : !valid ? (
-        <Centered>
-          Fix {count} {count === 1 ? "issue" : "issues"} to run the query.
-        </Centered>
+      {!open ? null : !runnable ? (
+        <Centered>{reason}</Centered>
       ) : status === "idle" ? (
         <Centered>Run a query to inspect matching rows.</Centered>
       ) : status === "loading" ? (
@@ -268,6 +273,30 @@ export function ResultsPanel() {
       )}
     </div>
   );
+}
+
+// Explains why Run is disabled (button title + the collapsed-panel message).
+function runReason({
+  count,
+  complete,
+  incomplete,
+  emptyRows,
+}: {
+  count: number;
+  complete: number;
+  incomplete: number;
+  emptyRows: number;
+}): string {
+  if (count > 0) {
+    return `Fix ${count} ${count === 1 ? "issue" : "issues"} to run the query.`;
+  }
+  if (complete === 0 && incomplete === 0 && emptyRows === 0) {
+    return "Add a condition to run the query.";
+  }
+  if (complete === 0) {
+    return "Finish your first condition to run the query.";
+  }
+  return "Finish or remove the incomplete conditions to run.";
 }
 
 function Centered({ children }: { children: React.ReactNode }) {
