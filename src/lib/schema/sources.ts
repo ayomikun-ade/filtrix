@@ -7,8 +7,21 @@ export const DATA_SOURCES: DataSource[] = [movies, books, songs];
 
 export const DEFAULT_SOURCE_ID = movies.id;
 
+// User-imported sources live in a persisted store; it mirrors them here via
+// `setCustomSources` so the synchronous `getSource` can resolve them too,
+// without this module depending on React or the store.
+let customSources: DataSource[] = [];
+
+export function setCustomSources(sources: DataSource[]): void {
+  customSources = sources;
+}
+
+export function getAllSources(): DataSource[] {
+  return [...DATA_SOURCES, ...customSources];
+}
+
 export function getSource(id: string): DataSource | undefined {
-  return DATA_SOURCES.find((source) => source.id === id);
+  return getAllSources().find((source) => source.id === id);
 }
 
 export function getField(

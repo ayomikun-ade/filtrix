@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type DialogName = "import" | "export" | "savePreset";
+export type DialogName = "import" | "export" | "savePreset" | "importData";
 
 interface UiState {
   dialog: DialogName | null;

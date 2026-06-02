@@ -13,4 +13,7 @@ export interface DataSource {
   description: string;
   fields: FieldDef[];
   rows: Record<string, unknown>[];
+  // User-imported sources run against their real rows (no synthetic expansion)
+  // and can be removed from the picker. Built-in sources leave this unset.
+  custom?: boolean;
 }

@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useTheme } from "next-themes";
 
-import { DATA_SOURCES } from "@/lib/schema/sources";
+import { useAllSources } from "@/lib/store/customSourcesStore";
 import { useHistory, useHistoryStore } from "@/lib/store/historyStore";
 import { useQueryActions } from "@/lib/store/hooks";
 import { useQueryStore } from "@/lib/store/queryStore";
@@ -31,6 +31,7 @@ export function useCommands(): Command[] {
   const setSource = useSourceStore((s) => s.setSource);
   const { undo, redo } = useHistory();
   const requestRun = useRunStore((s) => s.requestRun);
+  const sources = useAllSources();
   const { resolvedTheme, setTheme } = useTheme();
 
   return useMemo(() => {
@@ -72,6 +73,11 @@ export function useCommands(): Command[] {
         chord: { mod: true, key: "i" },
       },
       {
+        id: "import-data",
+        label: "Import data source from JSON",
+        run: () => useUiStore.getState().openDialog("importData"),
+      },
+      {
         id: "save-preset",
         label: "Save query as preset",
         run: () => useUiStore.getState().openDialog("savePreset"),
@@ -88,7 +94,7 @@ export function useCommands(): Command[] {
         run: redo,
         chord: { mod: true, shift: true, key: "z", whenTyping: true },
       },
-      ...DATA_SOURCES.map((source) => ({
+      ...sources.map((source) => ({
         id: `source-${source.id}`,
         label: `Switch data source to ${source.name}`,
         run: () => switchSource(source.id),
@@ -108,6 +114,7 @@ export function useCommands(): Command[] {
     redo,
     requestRun,
     setSource,
+    sources,
     resolvedTheme,
     setTheme,
   ]);

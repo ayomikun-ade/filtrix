@@ -7,7 +7,7 @@ import {
   type ScalarValue,
 } from "@/lib/query/types";
 import type { DataSource } from "@/lib/schema/types";
-import { isRenderableCondition } from "@/lib/query/builders/shared";
+import { isRenderableCondition, tableName } from "@/lib/query/builders/shared";
 
 type Nodes = Record<NodeId, QueryNode>;
 type GqlFilter = Record<string, unknown>;
@@ -22,7 +22,7 @@ export function toGraphql(tree: QueryTree, source: DataSource): string {
     .join("\n    ");
   const arg = filter ? `(where: ${gqlObject(filter)})` : "";
 
-  return `query {\n  ${source.id}${arg} {\n    ${selection}\n  }\n}`;
+  return `query {\n  ${tableName(source)}${arg} {\n    ${selection}\n  }\n}`;
 }
 
 function gqlNode(nodes: Nodes, id: NodeId): GqlFilter | null {

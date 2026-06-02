@@ -8,13 +8,17 @@ import {
   type ScalarValue,
 } from "@/lib/query/types";
 import type { DataSource } from "@/lib/schema/types";
-import { fieldType, isRenderableCondition } from "@/lib/query/builders/shared";
+import {
+  fieldType,
+  isRenderableCondition,
+  tableName,
+} from "@/lib/query/builders/shared";
 
 type Nodes = Record<NodeId, QueryNode>;
 
 export function toSql(tree: QueryTree, source: DataSource): string {
   const root = tree.nodes[tree.rootId];
-  const base = `SELECT *\nFROM ${source.id}`;
+  const base = `SELECT *\nFROM ${tableName(source)}`;
   if (!root || !isGroup(root)) return `${base};`;
 
   const parts = root.children

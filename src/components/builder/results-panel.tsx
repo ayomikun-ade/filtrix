@@ -16,7 +16,7 @@ import {
 
 import { toNaturalLanguage } from "@/lib/query/builders";
 import { buildPredicate, type Row } from "@/lib/query/evaluate";
-import { DATASET_SIZE, expandDataset } from "@/lib/schema/generate";
+import { getDatasetRows } from "@/lib/schema/generate";
 import { getSource } from "@/lib/schema/sources";
 import { useQueryStore } from "@/lib/store/queryStore";
 import { useRunHistoryStore } from "@/lib/store/runHistoryStore";
@@ -90,7 +90,7 @@ export function ResultsPanel() {
     const snapshot = useQueryStore.getState();
     const tree = { rootId: snapshot.rootId, nodes: snapshot.nodes };
     timer.current = window.setTimeout(() => {
-      const matches = expandDataset(source, DATASET_SIZE).filter(
+      const matches = getDatasetRows(source).filter(
         buildPredicate(tree, source),
       );
       setResults(matches);
