@@ -9,8 +9,15 @@ import type {
 } from "@/lib/query/types";
 import { resolveControl } from "@/lib/schema/resolve";
 import type { FieldDef } from "@/lib/schema/types";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 interface ValueControlProps {
@@ -57,11 +64,11 @@ export function ValueControl({
 
     case "date":
       return (
-        <Input
-          type="date"
-          value={asText(value)}
-          onChange={(e) => onChange(e.target.value || null)}
-          aria-invalid={invalid}
+        <DatePicker
+          value={asText(value) || null}
+          onChange={(v) => onChange(v)}
+          ariaLabel="Value"
+          invalid={invalid}
         />
       );
 
@@ -70,18 +77,26 @@ export function ValueControl({
 
     case "select":
       return (
-        <NativeSelect
-          value={asText(value)}
-          onChange={(e) => onChange(e.target.value || null)}
-          aria-invalid={invalid}
+        <Select
+          items={(field.values ?? []).map((v) => ({ value: v, label: v }))}
+          value={asText(value) || null}
+          onValueChange={(v) => onChange(v || null)}
         >
-          <option value="">Select…</option>
-          {(field.values ?? []).map((v) => (
-            <option key={v} value={v}>
-              {v}
-            </option>
-          ))}
-        </NativeSelect>
+          <SelectTrigger
+            aria-label="Value"
+            aria-invalid={invalid || undefined}
+            className="w-full"
+          >
+            <SelectValue placeholder="Select…" />
+          </SelectTrigger>
+          <SelectContent>
+            {(field.values ?? []).map((v) => (
+              <SelectItem key={v} value={v}>
+                {v}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       );
 
     case "multiselect":
@@ -264,26 +279,48 @@ function RangeControl({
 }) {
   const [from, to] = value;
 
-  function set(index: 0 | 1, raw: string) {
-    const parsed: ScalarValue =
-      raw === "" ? null : type === "number" ? Number(raw) : raw;
-    onChange(index === 0 ? [parsed, to] : [from, parsed]);
+  function setValue(index: 0 | 1, next: ScalarValue) {
+    onChange(index === 0 ? [next, to] : [from, next]);
+  }
+
+  if (type === "date") {
+    return (
+      <div className="flex items-center gap-1.5">
+        <DatePicker
+          value={from == null ? null : String(from)}
+          onChange={(v) => setValue(0, v)}
+          placeholder="Start"
+          ariaLabel="Range start"
+        />
+        <span className="text-xs text-muted-foreground">and</span>
+        <DatePicker
+          value={to == null ? null : String(to)}
+          onChange={(v) => setValue(1, v)}
+          placeholder="End"
+          ariaLabel="Range end"
+        />
+      </div>
+    );
+  }
+
+  function setNumber(index: 0 | 1, raw: string) {
+    setValue(index, raw === "" ? null : Number(raw));
   }
 
   return (
     <div className="flex items-center gap-1.5">
       <Input
-        type={type}
+        type="number"
         value={from == null ? "" : String(from)}
-        onChange={(e) => set(0, e.target.value)}
-        placeholder={type === "number" ? "min" : undefined}
+        onChange={(e) => setNumber(0, e.target.value)}
+        placeholder="min"
       />
       <span className="text-xs text-muted-foreground">and</span>
       <Input
-        type={type}
+        type="number"
         value={to == null ? "" : String(to)}
-        onChange={(e) => set(1, e.target.value)}
-        placeholder={type === "number" ? "max" : undefined}
+        onChange={(e) => setNumber(1, e.target.value)}
+        placeholder="max"
       />
     </div>
   );

@@ -8,6 +8,8 @@ import {
 } from "@/lib/query/types";
 import { movies } from "@/lib/schema/datasets/movies";
 import {
+  analyzeQuery,
+  conditionStatus,
   countErrors,
   validateCondition,
   validateGroup,
@@ -153,5 +155,69 @@ describe("validateTree", () => {
     expect(map[emptyGroup.id][0].message).toMatch(/empty/i);
     expect(map[root.id]).toBeUndefined();
     expect(countErrors(map)).toBe(2);
+  });
+});
+
+describe("conditionStatus", () => {
+  it("classifies a row by how far along it is", () => {
+    expect(conditionStatus(cond({}), movies)).toBe("empty");
+    // A field has been chosen but the row isn't runnable yet → engaged/incomplete.
+    expect(conditionStatus(cond({ field: "rating" }), movies)).toBe(
+      "incomplete",
+    );
+    expect(
+      conditionStatus(
+        cond({ field: "rating", operator: "gt", value: null }),
+        movies,
+      ),
+    ).toBe("incomplete");
+    expect(
+      conditionStatus(
+        cond({ field: "rating", operator: "contains", value: "x" }),
+        movies,
+      ),
+    ).toBe("invalid");
+    expect(
+      conditionStatus(
+        cond({ field: "rating", operator: "gt", value: 8 }),
+        movies,
+      ),
+    ).toBe("complete");
+  });
+});
+
+describe("analyzeQuery", () => {
+  function treeWith(...conditions: ConditionNode[]) {
+    const root = createGroup(null);
+    root.children = conditions.map((c) => c.id);
+    const nodes: Record<string, QueryNode> = { [root.id]: root };
+    for (const c of conditions) {
+      c.parentId = root.id;
+      nodes[c.id] = c;
+    }
+    return { rootId: root.id, nodes };
+  }
+
+  it("is not runnable for an empty query", () => {
+    expect(analyzeQuery(treeWith(), movies).runnable).toBe(false);
+  });
+
+  it("is not runnable while any condition is incomplete", () => {
+    const tree = treeWith(
+      cond({ field: "rating", operator: "gt", value: 8 }), // complete
+      cond({ field: "year", operator: "gt", value: null }), // incomplete
+    );
+    const a = analyzeQuery(tree, movies);
+    expect(a.complete).toBe(1);
+    expect(a.incomplete).toBe(1);
+    expect(a.runnable).toBe(false);
+  });
+
+  it("is runnable once every condition is complete", () => {
+    const a = analyzeQuery(
+      treeWith(cond({ field: "rating", operator: "gt", value: 8 })),
+      movies,
+    );
+    expect(a.runnable).toBe(true);
   });
 });

@@ -1,3 +1,4 @@
+import { isRenderableCondition } from "@/lib/query/builders/shared";
 import { OPERATORS } from "@/lib/query/operators";
 import {
   isGroup,
@@ -100,6 +101,67 @@ export function validateTree(
 
 export function countErrors(map: ValidationMap): number {
   return Object.values(map).reduce((sum, errors) => sum + errors.length, 0);
+}
+
+// A condition's progress, distinct from validity:
+// - "empty":      untouched (no field) — neutral, not yet flagged.
+// - "incomplete": engaged (field chosen) but not yet runnable — flagged amber.
+// - "invalid":    a genuine mistake — flagged red (see validateCondition).
+// - "complete":   fully filled in and valid.
+export type ConditionStatus = "empty" | "incomplete" | "invalid" | "complete";
+
+export function conditionStatus(
+  node: ConditionNode,
+  source: DataSource,
+): ConditionStatus {
+  if (validateCondition(node, source).length > 0) return "invalid";
+  if (!node.field) return "empty";
+  return isRenderableCondition(node) ? "complete" : "incomplete";
+}
+
+export interface QueryAnalysis {
+  errors: number; // invalid conditions + empty nested groups
+  incomplete: number; // engaged-but-incomplete conditions
+  emptyRows: number; // untouched conditions (no field)
+  complete: number; // runnable conditions
+  runnable: boolean; // safe to execute
+}
+
+// A query runs only when it has something to run (≥1 complete condition) and
+// nothing half-finished or broken anywhere.
+export function analyzeQuery(
+  tree: QueryTree,
+  source: DataSource,
+): QueryAnalysis {
+  let errors = 0;
+  let incomplete = 0;
+  let emptyRows = 0;
+  let complete = 0;
+
+  for (const node of Object.values(tree.nodes)) {
+    if (isGroup(node)) {
+      if (node.id !== tree.rootId && node.children.length === 0) errors++;
+      continue;
+    }
+    switch (conditionStatus(node, source)) {
+      case "invalid":
+        errors++;
+        break;
+      case "incomplete":
+        incomplete++;
+        break;
+      case "empty":
+        emptyRows++;
+        break;
+      case "complete":
+        complete++;
+        break;
+    }
+  }
+
+  const runnable =
+    complete >= 1 && incomplete === 0 && emptyRows === 0 && errors === 0;
+  return { errors, incomplete, emptyRows, complete, runnable };
 }
 
 function isEmpty(value: unknown): boolean {

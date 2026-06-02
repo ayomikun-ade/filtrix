@@ -56,7 +56,8 @@ describe("results panel", () => {
 
   it("paginates a full result set", async () => {
     const user = userEvent.setup();
-    render(<ResultsPanel />); // empty query matches every row
+    add("rating", "gt", 0); // every row has a positive rating, so all match
+    render(<ResultsPanel />);
 
     await user.click(screen.getByRole("button", { name: /run/i }));
 

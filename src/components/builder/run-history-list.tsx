@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Delete02Icon } from "@hugeicons/core-free-icons";
 
@@ -17,6 +19,11 @@ export function RunHistoryList({ onNavigate }: { onNavigate?: () => void }) {
   const clear = useRunHistoryStore((s) => s.clear);
   const setSource = useSourceStore((s) => s.setSource);
   const loadTree = useQueryStore((s) => s.loadTree);
+
+  // Persisted store hydrates from localStorage on the client only.
+  useEffect(() => {
+    void useRunHistoryStore.persist.rehydrate();
+  }, []);
 
   function restore(record: RunRecord) {
     onNavigate?.();

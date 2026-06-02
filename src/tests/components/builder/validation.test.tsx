@@ -7,6 +7,7 @@ import { useQueryStore } from "@/lib/store/queryStore";
 import { useSourceStore } from "@/lib/store/sourceStore";
 import { BuilderCanvas } from "@/components/builder/builder-canvas";
 import { ValidationBadge } from "@/components/builder/validation-badge";
+import { selectOption } from "@/tests/helpers";
 
 const store = () => useQueryStore.getState();
 
@@ -40,8 +41,8 @@ describe("validation in the builder", () => {
     const user = userEvent.setup();
     render(<BuilderCanvas />);
     await user.click(screen.getByRole("button", { name: /add condition/i }));
-    await user.selectOptions(screen.getByLabelText("Field"), "rating");
-    await user.selectOptions(screen.getByLabelText("Operator"), "between");
+    await selectOption(user, "Field", "Rating");
+    await selectOption(user, "Operator", "between");
 
     const [from, to] = screen.getAllByRole("spinbutton");
     await user.type(from, "9");
